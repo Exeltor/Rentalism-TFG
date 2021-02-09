@@ -37,6 +37,16 @@ export default {
     '@nuxtjs/vuetify',
   ],
 
+  // Vuetify config
+  vuetify: {
+    treeShake: true,
+    customVariables: ['~/assets/style/variables.sass'],
+    defaultAssets: {
+      font: false,
+      icons: false
+    }
+  },
+
   // Modules: https://go.nuxtjs.dev/config-modules
   modules: [
     // https://go.nuxtjs.dev/axios
