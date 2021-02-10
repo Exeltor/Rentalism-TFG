@@ -15,7 +15,6 @@ export default {
     ],
     link: [
       { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' },
-      { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css?family=Oswald|Libre+Baskerville&display=swap' }
     ]
   },
 
@@ -38,16 +37,6 @@ export default {
     '@nuxtjs/vuetify',
   ],
 
-  // Vuetify config
-  vuetify: {
-    treeShake: true,
-    customVariables: ['~/assets/style/variables.sass'],
-    defaultAssets: {
-      font: false,
-      icons: false
-    }
-  },
-
   // Modules: https://go.nuxtjs.dev/config-modules
   modules: [
     // https://go.nuxtjs.dev/axios
@@ -68,9 +57,15 @@ export default {
 
   // Vuetify module configuration: https://go.nuxtjs.dev/config-vuetify
   vuetify: {
-    customVariables: ['~/assets/variables.scss'],
+    treeShake: true,
+    customVariables: ['~/assets/style/variables.scss'],
+    defaultAssets: {
+      font: {
+        family: 'Open Sans'
+      },
+      icons: false
+    },
     theme: {
-      dark: true,
       themes: {
         dark: {
           primary: colors.blue.darken2,

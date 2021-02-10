@@ -1,6 +1,6 @@
 <template>
   <v-app light>
-    <v-navigation-drawer permanent>
+    <v-navigation-drawer permanent mini-variant>
       Locos
     </v-navigation-drawer>
   </v-app>
