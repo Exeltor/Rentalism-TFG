@@ -93,7 +93,7 @@
           </div>
         </div>
         <div class="d-flex flex-row justify-center align-center">
-          <img class="rounded mr-3" src="@/assets/images/Zaragoza-illustration.jpg" width="100px" height="100px">
+          <img class="rounded mr-3" src="@/assets/images/Malaga-illustration.jpg" width="100px" height="100px">
           <div class="d-flex flex-column justify-center">
             <p class="font-weight-bold mb-2">Málaga</p>
             <p class="mb-0">135 inmuebles</p>

@@ -3,19 +3,24 @@
     <v-navigation-drawer class="default__navigation" permanent mini-variant mini-variant-width="120px" app>
       <v-list nav>
         <v-list-item style="margin-bottom: 50px">
-          <img class="logo" src="@/assets/images/logo.svg" alt="Rentalism">
+          <nuxt-link to="/">
+            <img class="logo" src="@/assets/images/logo.svg" alt="Rentalism">
+          </nuxt-link>
         </v-list-item>
-        <v-list-item-group v-model="selectedItem" color="primary">
-          <v-list-item class="navigation__item">
+        <v-list-item-group color="primary">
+          <v-list-item class="navigation__item" tag="nuxt-link" nuxt to="/search" exact exact-active-class="v-item--active">
+            <img class="navigation__img" src="@/assets/images/search-icon.svg" alt="Search">
+          </v-list-item>
+          <v-list-item class="navigation__item" tag="nuxt-link" nuxt to="/profile" exact exact-active-class="v-item--active">
             <img class="navigation__img" src="@/assets/images/user-icon.svg" alt="Profile">
           </v-list-item>
-          <v-list-item class="navigation__item">
+          <v-list-item class="navigation__item" tag="nuxt-link" nuxt to="/messages" exact exact-active-class="v-item--active">
             <img class="navigation__img" src="@/assets/images/message-icon.svg" alt="Messages">
           </v-list-item>
-          <v-list-item class="navigation__item">
+          <v-list-item class="navigation__item" tag="nuxt-link" nuxt to="/listings" exact exact-active-class="v-item--active">
             <img class="navigation__img" src="@/assets/images/grid-icon.svg" alt="Listings">
           </v-list-item>
-          <v-list-item class="navigation__item">
+          <v-list-item class="navigation__item" tag="nuxt-link" nuxt to="/settings" exact exact-active-class="v-item--active">
             <img class="navigation__img" src="@/assets/images/settings-icon.svg" alt="Settings">
           </v-list-item>
         </v-list-item-group>
