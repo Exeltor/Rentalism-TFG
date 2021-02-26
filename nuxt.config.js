@@ -2,7 +2,7 @@ import colors from 'vuetify/es5/util/colors'
 
 export default {
   // Target: https://go.nuxtjs.dev/config-target
-  target: 'static',
+  mode: 'universal',
 
   // Global page headers: https://go.nuxtjs.dev/config-head
   head: {
@@ -43,6 +43,28 @@ export default {
     '@nuxtjs/axios',
     // https://go.nuxtjs.dev/pwa
     '@nuxtjs/pwa',
+    [
+      '@nuxtjs/firebase',
+      {
+        config: {
+          apiKey: "AIzaSyAJa-HPO4lgvUNZ9GRlx10anJUxVtMmm0I",
+          authDomain: "rentalism-52556.firebaseapp.com",
+          databaseURL: "https://vektor-38512.firebaseio.com",
+          projectId: "rentalism-52556",
+          storageBucket: "rentalism-52556.appspot.com",
+          messagingSenderId: "435233991978",
+          appId: "1:435233991978:web:231af5ea6fa659d8510253"
+        },
+        services: {
+          auth: {
+            initialize: {
+              onAuthStateChangedAction: 'onAuthStateChanged'
+            },
+            ssr: true
+          }
+        }
+      }
+    ]
   ],
 
   // Axios module configuration: https://go.nuxtjs.dev/config-axios
@@ -52,6 +74,15 @@ export default {
   pwa: {
     manifest: {
       lang: 'en'
+    },
+    workbox: {
+      importScripts: [
+        // ...
+        '/firebase-auth-sw.js'
+      ],
+      // by default the workbox module will not install the service worker in dev environment to avoid conflicts with HMR
+      // only set this true for testing and remember to always clear your browser cache in development
+      dev: process.env.NODE_ENV === 'development'
     }
   },
 

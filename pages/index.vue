@@ -17,7 +17,7 @@
         <v-select
           class="rounded"
           :items="items"
-          v-model="value"
+          v-model="selectedType"
           filled
           rounded
           placeholder="Tipo"
@@ -29,7 +29,7 @@
         <v-select
           class="rounded"
           :items="items"
-          v-model="value"
+          v-model="selectedSubtype"
           filled
           rounded
           placeholder="Subtipo"
@@ -38,7 +38,7 @@
         </v-select>
       </v-col>
       <v-col cols="6">
-        <v-text-field class="rounded" filled rounded placeholder="Localidad">
+        <v-text-field class="rounded" filled rounded placeholder="Localidad" v-model="city">
           <img slot="prepend-inner" src="@/assets/images/search-icon.svg" alt="search-icon" style="height: 25px; width: 25px">
         </v-text-field>
         <div class="text-right">
@@ -113,6 +113,10 @@ import { Component, Vue } from 'vue-property-decorator';
       'Titan',
       'Loquillo'
     ]
+
+    selectedType: string = ''
+    selectedSubtype: string = ''
+    city: string = ''
   }
 </script>
 

@@ -7,3 +7,10 @@ $material-light: (
 
 $border-radius-root: 20px;
 $btn-text-transform: none;
+$text-field-line-height: 45px;
+
+
+// custom variables
+.v-text-field input {
+  font-size: 1.25rem;
+}
