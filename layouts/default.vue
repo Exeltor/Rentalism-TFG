@@ -42,14 +42,17 @@
           <v-window-item :value="1">
             <div class="d-flex flex-column align-center pa-10">
               <p class="text-h4 font-weight-bold mb-10">Inicia Sesión</p>
-              <v-text-field class="rounded align-self-stretch mb-6" filled rounded placeholder="E-mail" hide-details="auto">
+              <v-text-field v-model="email" class="rounded align-self-stretch mb-6" filled rounded placeholder="E-mail" hide-details="auto" :error-messages="emailErrors" @input="$v.email.$touch()" @blur="$v.email.$touch()">
                 <img slot="prepend-inner" src="@/assets/images/mail-icon.svg" alt="mail-icon" style="height: 25px; width: 25px">
               </v-text-field>
-              <v-text-field class="rounded align-self-stretch mb-2" filled rounded placeholder="Contraseña" hide-details="auto">
+              <v-text-field v-model="password" class="rounded align-self-stretch mb-2" filled rounded placeholder="Contraseña" hide-details="auto" type="password" :error-messages="passwordErrors" @input="$v.password.$touch()" @blur="$v.password.$touch()">
                 <img slot="prepend-inner" src="@/assets/images/key-icon.svg" alt="key-icon" style="height: 25px; width: 25px">
               </v-text-field>
               <p class="text-body-1 ma-0 align-self-start">¿Has olvidado tu contraseña? <span style="color: #77B6C0; cursor: pointer">Restaurar</span></p>
-              <v-btn class="rounded font-weight-bold my-7" x-large elevation="0" color="primary" style="width: 50%">
+              <v-expand-transition>
+                <v-alert v-if="showLoginError" text dense color="error">Usuario o contraseña incorrectos</v-alert>
+              </v-expand-transition>
+              <v-btn class="rounded font-weight-bold my-7" x-large elevation="0" color="primary" style="width: 50%" @click="login">
                 Entrar
               </v-btn>
               <p class="text-body-1 ma-0">O en caso contrario, <span style="color: #77B6C0; cursor: pointer" @click.stop="step = 2">registrate</span></p>
@@ -71,7 +74,7 @@
                 <img slot="prepend-inner" src="@/assets/images/key-icon.svg" alt="key-icon" style="height: 25px; width: 25px">
               </v-text-field>
               <v-btn class="rounded font-weight-bold my-7" x-large elevation="0" color="primary" style="width: 50%">
-                Registraro
+                Registrarse
               </v-btn>
               <p class="text-body-1 ma-0">O en caso contrario, <span style="color: #77B6C0; cursor: pointer" @click.stop="step = 1">inicia sesión</span></p>
             </div>
@@ -84,16 +87,62 @@
 
 <script lang="ts">
 import { Component, Vue, Watch } from 'vue-property-decorator';
-  @Component
+import { required, minLength, email } from 'vuelidate/lib/validators'
+  @Component({
+    validations: {
+      email: { required, email },
+      password: { required, minLength: minLength(6) }
+    }
+  })
   export default class Layout extends Vue {
     showLoginModal = false
     step = 1
+    
+    //login variables
+    email: string = ''
+    password: string = ''
+    showLoginError: boolean = false;
+
+    //registration variables
+    registrationEmail: string = ''
+    registrationName: string = ''
+    registrationPassword: string = ''
+    repeatRegistrationPassword: string = ''
 
     directToLogin() {
       if(!this.$store.getters.isLoggedIn) {
         this.showLoginModal = true
       } else {
         this.$router.push('/profile')
+      }
+    }
+
+    get emailErrors() {
+      const errors: string[] = []
+      if (!this.$v.email.$dirty) return errors
+      !this.$v.email.email && errors.push('Formato invalido')
+      !this.$v.email.required && errors.push('Este campo es obligatorio')
+      return errors
+    }
+
+    get passwordErrors() {
+      const errors: string[] = []
+      if (!this.$v.password.$dirty) return errors
+      !this.$v.password.minLength && errors.push(`Minimo ${this.$v.password.$params.minLength.min} caracteres`)
+      !this.$v.password.required && errors.push('Este campo es obligatorio')
+      return errors
+    }
+
+    login() {
+      this.$v.email.$touch()
+      this.$v.password.$touch()
+      if(!this.$v.email.$invalid && !this.$v.password.$invalid) {
+        this.$fire.auth.signInWithEmailAndPassword(this.email, this.password).then(response => {
+          
+        }).catch(() => {
+          this.showLoginError = true
+          setTimeout(() => { this.showLoginError = false }, 3000)
+        })
       }
     }
 

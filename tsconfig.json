@@ -27,7 +27,9 @@
       "@nuxt/types",
       "@nuxtjs/axios",
       "@types/node",
-      "@nuxtjs/vuetify"
+      "@types/vuelidate",
+      "@nuxtjs/vuetify",
+      "@nuxtjs/firebase"
     ]
   },
   "exclude": [
