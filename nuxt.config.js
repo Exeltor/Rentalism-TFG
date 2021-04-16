@@ -96,7 +96,6 @@ export default {
       font: {
         family: 'Open Sans'
       },
-      icons: false
     },
     theme: {
       themes: {

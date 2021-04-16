@@ -88,6 +88,7 @@
 <script lang="ts">
 import { Component, Vue, Watch } from 'vue-property-decorator';
 import { required, minLength, email, sameAs } from 'vuelidate/lib/validators'
+import { mapState } from 'vuex'
   @Component({
     validations: {
       email: { required, email },
@@ -96,9 +97,15 @@ import { required, minLength, email, sameAs } from 'vuelidate/lib/validators'
       registrationName: { required },
       registrationPassword: { required, minLength: minLength(6) },
       repeatRegistrationPassword: { sameAsPassword: sameAs('registrationPassword') }
+    },
+    computed: {
+      ...mapState({
+        localUser: 'authUser'
+      })
     }
   })
   export default class Layout extends Vue {
+    localUser!: any
     showLoginModal = false
     step = 1
     
@@ -118,7 +125,7 @@ import { required, minLength, email, sameAs } from 'vuelidate/lib/validators'
       if(!this.$store.getters.isLoggedIn) {
         this.showLoginModal = true
       } else {
-        this.$router.push('/profile')
+        this.$router.push(`/profile/${this.localUser.uid}`)
       }
     }
 

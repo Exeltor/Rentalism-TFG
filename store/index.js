@@ -1,8 +1,12 @@
+import { vuexfireMutations, firestoreAction } from 'vuexfire'
+
 export const state = () => ({
-  authUser: null
+  authUser: null,
+  userDoc: null
 })
 
 export const mutations = {
+  ...vuexfireMutations,
   RESET_STORE: (state) => {
     state.authUser = null
   },
@@ -34,23 +38,31 @@ export const actions = {
         authUser,
         claims,
       })
+
+      console.log('end server init')
     }
   },
-  async onAuthStateChanged({ commit }, { authUser }) {
+  async onAuthStateChanged({ commit, dispatch }, { authUser }) {
     if (!authUser) {
       commit('RESET_STORE')
+      dispatch('unbindUserDoc')
       return
     }
-    if (authUser && authUser.getIdToken) {
-      try {
-        const idToken = await authUser.getIdToken(true)
-        console.info('idToken', idToken)
-      } catch (e) {
-        console.error(e)
-      }
-    }
     commit('SET_AUTH_USER', { authUser })
-  }
+    await dispatch('bindUserDoc')
+  },
+  bindUserDoc: firestoreAction(async function ({ state, bindFirestoreRef }) {
+    if (!state.authUser) { return }
+    const ref = this.$fire.firestore
+      .collection('users')
+      .doc(state.authUser.uid)
+    await bindFirestoreRef('userDoc', ref, { wait: true })
+    console.log('user doc bound', state.userDoc)
+  }),
+  unbindUserDoc: firestoreAction(({ commit, unbindFirestoreRef }) => {
+    unbindFirestoreRef('userDoc')
+    commit('RESET_STORE')
+  }),
 }
 
 export const getters = {
