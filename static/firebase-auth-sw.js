@@ -1,10 +1,10 @@
 const ignorePaths = ["\u002F__webpack_hmr","\u002F_loading","\u002F_nuxt\u002F"]
 
 importScripts(
-  'https://www.gstatic.com/firebasejs/8.2.5/firebase-app.js'
+  'https://www.gstatic.com/firebasejs/8.4.0/firebase-app.js'
 )
 importScripts(
-  'https://www.gstatic.com/firebasejs/8.2.5/firebase-auth.js'
+  'https://www.gstatic.com/firebasejs/8.4.0/firebase-auth.js'
 )
 firebase.initializeApp({"apiKey":"AIzaSyAJa-HPO4lgvUNZ9GRlx10anJUxVtMmm0I","authDomain":"rentalism-52556.firebaseapp.com","databaseURL":"https:\u002F\u002Fvektor-38512.firebaseio.com","projectId":"rentalism-52556","storageBucket":"rentalism-52556.appspot.com","messagingSenderId":"435233991978","appId":"1:435233991978:web:231af5ea6fa659d8510253"})
 

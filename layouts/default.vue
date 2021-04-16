@@ -61,19 +61,19 @@
           <v-window-item :value="2">
             <div class="d-flex flex-column align-center pa-10">
               <p class="text-h4 font-weight-bold mb-10">Registrate</p>
-              <v-text-field class="rounded align-self-stretch mb-2" filled rounded placeholder="E-mail" hide-details="auto">
+              <v-text-field v-model="registrationEmail" class="rounded align-self-stretch mb-2" filled rounded placeholder="E-mail" hide-details="auto" :error-messages="registrationEmailErrors" @input="$v.registrationEmail.$touch()" @blur="$v.registrationEmail.$touch()">
                 <img slot="prepend-inner" src="@/assets/images/mail-icon.svg" alt="mail-icon" style="height: 25px; width: 25px">
               </v-text-field>
-              <v-text-field class="rounded align-self-stretch mb-6" filled rounded placeholder="Nombre" hide-details="auto">
+              <v-text-field v-model="registrationName" class="rounded align-self-stretch mb-6" filled rounded placeholder="Nombre" hide-details="auto" :error-messages="registrationNameErrors" @input="$v.registrationName.$touch()" @blur="$v.registrationName.$touch()">
                 <img slot="prepend-inner" src="@/assets/images/user-icon-grey.svg" alt="key-icon" style="height: 25px; width: 25px">
               </v-text-field>
-              <v-text-field class="rounded align-self-stretch mb-2" filled rounded placeholder="Contraseña" hide-details="auto">
+              <v-text-field v-model="registrationPassword" class="rounded align-self-stretch mb-2" filled rounded placeholder="Contraseña" type="password" hide-details="auto" :error-messages="registrationPasswordErrors" @input="$v.registrationPassword.$touch()" @blur="$v.registrationPassword.$touch()">
                 <img slot="prepend-inner" src="@/assets/images/key-icon.svg" alt="mail-icon" style="height: 25px; width: 25px">
               </v-text-field>
-              <v-text-field class="rounded align-self-stretch mb-2" filled rounded placeholder="Repite Contraseña" hide-details="auto">
+              <v-text-field v-model="repeatRegistrationPassword" class="rounded align-self-stretch mb-2" filled rounded placeholder="Repite Contraseña" type="password" hide-details="auto" :error-messages="registrationRepeatPasswordErrors" @input="$v.repeatRegistrationPassword.$touch()" @blur="$v.repeatRegistrationPassword.$touch()">
                 <img slot="prepend-inner" src="@/assets/images/key-icon.svg" alt="key-icon" style="height: 25px; width: 25px">
               </v-text-field>
-              <v-btn class="rounded font-weight-bold my-7" x-large elevation="0" color="primary" style="width: 50%">
+              <v-btn class="rounded font-weight-bold my-7" x-large elevation="0" :loading="registrationLoading" color="primary" style="width: 50%" @click="register">
                 Registrarse
               </v-btn>
               <p class="text-body-1 ma-0">O en caso contrario, <span style="color: #77B6C0; cursor: pointer" @click.stop="step = 1">inicia sesión</span></p>
@@ -87,11 +87,15 @@
 
 <script lang="ts">
 import { Component, Vue, Watch } from 'vue-property-decorator';
-import { required, minLength, email } from 'vuelidate/lib/validators'
+import { required, minLength, email, sameAs } from 'vuelidate/lib/validators'
   @Component({
     validations: {
       email: { required, email },
-      password: { required, minLength: minLength(6) }
+      password: { required, minLength: minLength(6) },
+      registrationEmail: { required, email },
+      registrationName: { required },
+      registrationPassword: { required, minLength: minLength(6) },
+      repeatRegistrationPassword: { sameAsPassword: sameAs('registrationPassword') }
     }
   })
   export default class Layout extends Vue {
@@ -108,6 +112,7 @@ import { required, minLength, email } from 'vuelidate/lib/validators'
     registrationName: string = ''
     registrationPassword: string = ''
     repeatRegistrationPassword: string = ''
+    registrationLoading: boolean = false
 
     directToLogin() {
       if(!this.$store.getters.isLoggedIn) {
@@ -125,11 +130,41 @@ import { required, minLength, email } from 'vuelidate/lib/validators'
       return errors
     }
 
+    get registrationEmailErrors() {
+      const errors: string[] = []
+      if (!this.$v.registrationEmail.$dirty) return errors
+      !this.$v.registrationEmail.email && errors.push('Formato invalido')
+      !this.$v.registrationEmail.required && errors.push('Este campo es obligatorio')
+      return errors
+    }
+
     get passwordErrors() {
       const errors: string[] = []
       if (!this.$v.password.$dirty) return errors
       !this.$v.password.minLength && errors.push(`Minimo ${this.$v.password.$params.minLength.min} caracteres`)
       !this.$v.password.required && errors.push('Este campo es obligatorio')
+      return errors
+    }
+
+    get registrationPasswordErrors() {
+      const errors: string[] = []
+      if (!this.$v.registrationPassword.$dirty) return errors
+      !this.$v.registrationPassword.minLength && errors.push(`Minimo ${this.$v.password.$params.minLength.min} caracteres`)
+      !this.$v.registrationPassword.required && errors.push('Este campo es obligatorio')
+      return errors
+    }
+
+    get registrationRepeatPasswordErrors() {
+      const errors: string[] = []
+      if (!this.$v.repeatRegistrationPassword.$dirty) return errors
+      !this.$v.repeatRegistrationPassword.sameAsPassword && errors.push('La contraseña debe coincidir')
+      return errors
+    }
+
+    get registrationNameErrors() {
+      const errors: string[] = []
+      if(!this.$v.registrationName.$dirty) return errors
+      !this.$v.registrationName.required && errors.push('Este campo es obligatorio')
       return errors
     }
 
@@ -146,10 +181,42 @@ import { required, minLength, email } from 'vuelidate/lib/validators'
       }
     }
 
+    register() {
+      this.$v.registrationEmail.$touch()
+      this.$v.registrationPassword.$touch()
+      this.$v.repeatRegistrationPassword.$touch()
+      this.$v.registrationName.$touch()
+
+      if(!this.$v.registrationEmail.$invalid
+        && !this.$v.registrationPassword.$invalid
+        && !this.$v.repeatRegistrationPassword.$invalid
+        && !this.$v.registrationName.$invalid
+      ) {
+        this.registrationLoading = true
+        this.$fire.auth.createUserWithEmailAndPassword(this.registrationEmail, this.registrationPassword).then(response => {
+          const userUid = response.user!.uid
+          console.log(userUid)
+          this.$fire.firestore.doc(`users/${userUid}`).set({
+            name: this.registrationName
+          }).then(() => {
+            this.registrationLoading = false
+            this.showLoginModal = false
+          }).catch(error => {
+            console.log(error)
+            this.registrationLoading = false
+          })
+        }).catch(error => {
+          console.log(error)
+          this.registrationLoading = false
+        })
+      }
+    }
+
     @Watch('showLoginModal')
     handleSwitch(value: any) {
       if (value === false) {
         this.step = 1
+        this.registrationLoading = false
       }
     }
   }
