@@ -23,6 +23,7 @@
           placeholder="Tipo"
         >
           <img slot="prepend-inner" src="@/assets/images/chevron-down.svg" alt="chevron-down" style="height: 25px; width: 25px">
+          <div slot="append-icon" />
         </v-select>
       </v-col>
       <v-col cols="3">
@@ -35,6 +36,7 @@
           placeholder="Subtipo"
         >
           <img slot="prepend-inner" src="@/assets/images/chevron-down.svg" alt="chevron-down" style="height: 25px; width: 25px">
+          <div slot="append-icon" />
         </v-select>
       </v-col>
       <v-col cols="6">

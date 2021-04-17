@@ -38,8 +38,6 @@ export const actions = {
         authUser,
         claims,
       })
-
-      console.log('end server init')
     }
   },
   async onAuthStateChanged({ commit, dispatch }, { authUser }) {
@@ -57,7 +55,6 @@ export const actions = {
       .collection('users')
       .doc(state.authUser.uid)
     await bindFirestoreRef('userDoc', ref, { wait: true })
-    console.log('user doc bound', state.userDoc)
   }),
   unbindUserDoc: firestoreAction(({ commit, unbindFirestoreRef }) => {
     unbindFirestoreRef('userDoc')
