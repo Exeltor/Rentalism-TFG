@@ -63,7 +63,8 @@ export default {
             },
             ssr: true
           },
-          firestore: true
+          firestore: true,
+          storage: true
         }
       }
     ]
@@ -100,7 +101,8 @@ export default {
     theme: {
       themes: {
         light: {
-          primary: '#77B6C0'
+          primary: '#77B6C0',
+          error: '#C30000'
         },
         dark: {
           primary: colors.blue.darken2,
