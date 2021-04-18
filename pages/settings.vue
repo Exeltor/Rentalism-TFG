@@ -1,32 +1,44 @@
 <template>
-  <v-row no-gutters justify="center">
-    <v-col cols="4" class="text-center">
-      <v-form ref="settingsForm">
-        <p class="text-h4">Tus ajustes</p>
-        <v-text-field v-model="userName" class="rounded" rounded filled label="Tu nombre" required :rules="requiredRule" />
-        <v-text-field v-model="userAddress" label="Dirección completa" rounded filled class="rounded" required :rules="requiredRule" />
-        <v-row>
-          <v-col>
-            <v-select
-              class="rounded"
-              :items="documentTypes"
-              v-model="selectedDocumentType"
-              filled
-              rounded
-              placeholder="Tipo de documento"
-            />
-          </v-col>
-          <v-col>
-            <v-text-field v-model="userDocNumber" class="rounded" rounded filled label="Numero de documento" :rules="requiredRule"/>
-          </v-col>
-        </v-row>
-        <v-text-field v-model="userTelephone" class="rounded" rounded filled label="Telefono" type="tel" :rules="requiredRule"/>
-        <v-btn :loading="isLoading" x-large color="primary" @click="save" elevation="0" block class="mb-3">Guardar información</v-btn>
-      </v-form>
-      <v-expand-transition>
-        <v-alert v-if="showSuccess" text type="success">Tus datos se han modificado correctamente</v-alert>
-        <v-alert v-if="showError" text type="error">Algo ha ido mal al actualizar tus datos, intentalo de nuevo</v-alert>
-      </v-expand-transition>
+  <v-row no-gutters justify="center"> 
+    <v-col class="text-center">
+      <p class="text-h4">Tus ajustes</p>
+      <v-row>
+        <v-col cols="4" class="text-center">
+          <p class="text-h4">Información básica</p>
+          <v-form ref="settingsForm">
+            <v-text-field v-model="userName" class="rounded" rounded filled label="Tu nombre" required :rules="requiredRule" />
+            <v-text-field v-model="userAddress" label="Dirección completa" rounded filled class="rounded" required :rules="requiredRule" />
+            <v-row>
+              <v-col>
+                <v-select
+                  class="rounded"
+                  :items="documentTypes"
+                  v-model="selectedDocumentType"
+                  filled
+                  rounded
+                  placeholder="Tipo de documento"
+                />
+              </v-col>
+              <v-col>
+                <v-text-field v-model="userDocNumber" class="rounded" rounded filled label="Numero de documento" :rules="requiredRule"/>
+              </v-col>
+            </v-row>
+            <v-text-field v-model="userTelephone" class="rounded" rounded filled label="Telefono" type="tel" :rules="requiredRule"/>
+            <v-btn :loading="isLoading" x-large color="primary" @click="save" elevation="0" block class="mb-3">Guardar información</v-btn>
+          </v-form>
+          <v-expand-transition>
+            <v-alert v-if="showSuccess" text type="success">Tus datos se han modificado correctamente</v-alert>
+            <v-alert v-if="showError" text type="error">Algo ha ido mal al actualizar tus datos, intentalo de nuevo</v-alert>
+          </v-expand-transition>
+        </v-col>
+        <v-col cols="4">
+          <p class="text-h4">Documentación</p>
+          <div class="text-left">
+            <p>Sube aqui una foto de la cara principal de tu documento de identificación</p>
+            <p class="text-caption">Asegurate que sea el mismo documento que el introducido en la Información Básica</p>
+          </div>
+        </v-col>
+      </v-row>
     </v-col>
   </v-row>
 </template>
