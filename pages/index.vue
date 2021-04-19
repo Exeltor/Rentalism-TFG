@@ -16,7 +16,7 @@
       <v-col cols="3">
         <v-select
           class="rounded"
-          :items="items"
+          :items="types"
           v-model="selectedType"
           filled
           rounded
@@ -29,7 +29,7 @@
       <v-col cols="3">
         <v-select
           class="rounded"
-          :items="items"
+          :items="subtypes[selectedType]"
           v-model="selectedSubtype"
           filled
           rounded
@@ -107,18 +107,21 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from 'vue-property-decorator';
+import { Component, Vue, Watch } from 'vue-property-decorator';
+import { types, subtypes } from '@/helpers/constants'
   @Component
   export default class HomePage extends Vue {
-    items = [
-      'Mostro',
-      'Titan',
-      'Loquillo'
-    ]
+    types = types
+    subtypes = subtypes
 
     selectedType: string = ''
     selectedSubtype: string = ''
     city: string = ''
+
+    @Watch('selectedType')
+    handle() {
+      this.selectedSubtype = ''
+    }
   }
 </script>
 

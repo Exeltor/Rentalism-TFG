@@ -102,6 +102,7 @@ export default {
       themes: {
         light: {
           primary: '#77B6C0',
+          secondary: '#f0f0f0',
           error: '#C30000'
         },
         dark: {
