@@ -278,6 +278,8 @@ import { mapState } from 'vuex'
       this.$fire.firestore.collection('listings').add({
         name: this.name,
         metres: this.metres,
+        type: this.selectedType,
+        subtype: this.selectedSubtype,
         descriptionBuilding: this.descriptionBuilding,
         equipment: this.equipment,
         comments: this.comments,
