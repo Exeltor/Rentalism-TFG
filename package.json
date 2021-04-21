@@ -13,10 +13,13 @@
     "@nuxtjs/axios": "^5.12.5",
     "@nuxtjs/firebase": "^7.4.1",
     "@nuxtjs/pwa": "^3.3.5",
+    "algoliasearch": "^4.9.0",
     "core-js": "^3.8.3",
     "firebase": "^8.2.6",
     "nuxt": "^2.14.12",
+    "nuxt-gmaps": "^1.2.10",
     "vue-class-component": "^7.2.6",
+    "vue-instantsearch": "^3.6.0",
     "vue-property-decorator": "^9.1.2",
     "vuelidate": "^0.7.6",
     "vuexfire": "^3.2.5"

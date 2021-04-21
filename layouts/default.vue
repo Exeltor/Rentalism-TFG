@@ -15,9 +15,6 @@
             <v-list-item class="navigation__item" @click.stop="directToLogin" exact exact-active-class="v-item--active">
               <img class="navigation__img" src="@/assets/images/user-icon.svg" alt="Profile">
             </v-list-item>
-            <v-list-item class="navigation__item" tag="nuxt-link" nuxt to="/messages" exact exact-active-class="v-item--active">
-              <img class="navigation__img" src="@/assets/images/message-icon.svg" alt="Messages">
-            </v-list-item>
             <v-list-item class="navigation__item" tag="nuxt-link" nuxt to="/listings" exact exact-active-class="v-item--active">
               <img class="navigation__img" src="@/assets/images/grid-icon.svg" alt="Listings">
             </v-list-item>
@@ -32,7 +29,7 @@
       </div>
     </v-navigation-drawer>
     <v-main>
-      <v-container fluid style="max-width:1264px">
+      <v-container fluid :style="$route.path === '/search' ? null : 'max-width:1264px'" :class="$route.path === '/search' ? 'pa-0' : null">
         <nuxt />
       </v-container>
     </v-main>
