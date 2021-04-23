@@ -60,7 +60,7 @@ import { Component, Vue } from 'vue-property-decorator'
       this.loading = true
       Promise.all([
         this.$fire.firestore.collection('listings').where('user', '==', this.$store.state.authUser.uid).get(),
-        this.$fire.firestore.collection('rentals').where('tentant', '==', this.$store.state.authUser.uid).get(),
+        this.$fire.firestore.collection('rentals').where('tenant', '==', this.$store.state.authUser.uid).get(),
       ]).then(responses => {
         responses[0].docs.forEach(document => this.listings.push(document.data()))
         responses[1].docs.forEach(document => this.rentals.push(document.data()))
