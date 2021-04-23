@@ -23,23 +23,21 @@
             </div>
             <v-divider />
             <div class="message-container">
-              <div v-if="messages.length > 0" style="height: inherit; width: 100%" class="empty-messages-placeholder">
-                <p class="mb-0">No hay mensajes... ¡Escribe uno!</p>
+              <div v-if="messages.length > 0" style="height: inherit; width: 100%" class="message-wrapper">
+                <div v-for="message in messages" :key="message.id" class="pa-2 rounded message-bubble" style="background-color: #eeeeee;" :style="message.sender !== $store.state.authUser.uid ? 'align-self: flex-start;' : 'align-self: flex-end;'">
+                  <p v-if="otherPersonData" class="mb-0 font-weight-bold" :class="message.sender !== $store.state.authUser.uid ? 'text-left' : 'text-right'">{{ message.sender !== $store.state.authUser.uid ? otherPersonData.name : 'Tú' }}</p>
+                  <p style="white-space: pre-wrap;">{{ message.message }}</p>
+                  <p class="text-caption mb-0" :class="message.sender !== $store.state.authUser.uid ? 'text-left' : 'text-right'">{{ message.timestamp.toDate().toLocaleTimeString() }}</p>
+                </div>
               </div>
-              <div v-else style="height: inherit; width: 100%" class="message-wrapper">
-                <div class="pa-2 rounded" style="align-self: flex-start; background-color: #eeeeee">
-                  <p v-if="otherPersonData" class="mb-0 font-weight-bold">{{ otherPersonData.name }}</p>
-                  <p style="white-space: pre">Menudo mensajiño mi pana</p>
-                </div>
-                <div class="pa-2 rounded" style="align-self: flex-end; background-color: #eeeeee">
-                  awkdjakwd
-                </div>
+              <div v-else style="height: inherit; width: 100%" class="empty-messages-placeholder">
+                <p class="mb-0">No hay mensajes... ¡Escribe uno!</p>
               </div>
             </div>
             <v-divider class="my-4" />
             <div class="input-container">
               <v-textarea v-model="chatMessageText" class="rounded mr-1" filled rounded placeholder="Escribe tu mensaje..." auto-grow rows="1" hide-details="false" />
-              <v-btn icon large><img src="@/assets/images/send-message-icon.svg" alt="Send" style="transform: rotate(90deg); height: 30px;"></v-btn>
+              <v-btn icon large><img src="@/assets/images/send-message-icon.svg" alt="Send" style="transform: rotate(90deg); height: 30px;" @click="sendMessage"></v-btn>
             </div>
           </div>
         </v-col>
@@ -104,6 +102,15 @@ import OwnerView from '@/components/rentals/OwnerView.vue'
       if (this.chatListener) this.chatListener()
     }
 
+    sendMessage() {
+      this.$fire.firestore.collection(`rentals/${this.$route.params.id}/messages`).add({
+        message: this.chatMessageText,
+        sender: this.$store.state.authUser.uid,
+        timestamp: new Date
+      })
+      this.chatMessageText = ''
+    }
+
   }
 </script>
 
@@ -138,6 +145,10 @@ import OwnerView from '@/components/rentals/OwnerView.vue'
       display: flex;
       flex-direction: column;
       justify-content: flex-end;
+
+      .message-bubble:not(:last-child) {
+        margin-bottom: .8rem;
+      }
     }
   }
 
