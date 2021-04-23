@@ -23,8 +23,18 @@
       </div>
       <v-col class="ml-2">
         <p class="text-h5 mb-0">{{ item.name }}</p>
-        <p>{{ item.type }} - {{ item.subtype }}</p>
-        <p>{{ item.metres }}</p>
+        <p class="mb-0">{{ item.type }} - {{ item.subtype }}</p>
+        <p class="mb-10"><img src="@/assets/images/area-icon.svg" style="height: 1.2rem; vertical-align: sub" class="mr-1">{{ item.metres }} m2</p>
+        <v-row no-gutters>
+          <v-col>
+            <p class="mb-0">{{ item.location.address }}, {{ item.location.number }}</p>
+            <p class="mb-0">{{ item.location.postalCode }} - {{ item.location.city }}</p>
+          </v-col>
+          <div class="pa-1 px-4 text-center mb-5" style="background-color: #77B6C0; border-radius: 1.5rem; color: white;">
+            <p style="font-weight: bold" class="text-h6 mb-0">{{ item.price }} €</p>
+            <p class="mb-0">al mes</p>
+          </div>
+        </v-row>
       </v-col>
     </v-row>
   </div>

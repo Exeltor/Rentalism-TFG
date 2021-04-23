@@ -4,6 +4,7 @@
       ref="gMap"
       language="es"
       :zoom="6"
+      @loaded="isLoaded = true"
     >
       <GMapMarker
         v-for="item of state.items"
@@ -30,10 +31,17 @@ import { connectGeoSearch } from 'instantsearch.js/es/connectors'
   })
   export default class GeoSearchMap extends Vue {
     state!: any
+    isLoaded: boolean = false
 
+    @Watch('isLoaded')
     @Watch('state')
     handle() {
-      if (this.state) this.state.isRefineOnMapMove = true
+      if(this.isLoaded) {
+        console.log(this.$refs.gMap)
+        this.$nextTick(() => {
+          (this.$refs.gMap as any).initChildren()
+        })
+      }
     }
   }
 </script>
