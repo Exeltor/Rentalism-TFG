@@ -26,7 +26,7 @@
                 <p class="ml-4">{{ listing.type }} - {{ listing.subtype }}</p>
                 <v-row no-gutters class="mt-3">
                   <v-btn class="rounded-sm mr-2" elevation="0" text>Ver página</v-btn>
-                  <v-btn class="rounded-sm" elevation="0" color="primary">Administrar</v-btn>
+                  <v-btn v-if="listing.rentalId" class="rounded-sm" elevation="0" color="primary" nuxt :to="`rentals/${listing.rentalId}`">Administrar</v-btn>
                 </v-row>
               </v-col>
             </v-row>
@@ -38,7 +38,21 @@
       </v-col>
       <v-col class="pa-8 rounded-white-container">
         <p class="text-h6">Tus alquileres</p>
-        <div v-if="rentals.length > 0"></div>
+        <div v-if="rentals.length > 0">
+          <div v-for="(rental, index) in rentals" :key="index" class="rounded listing-tile pa-3">
+            <v-row no-gutters>
+              <v-img class="rounded mr-2" :src="rental.photos[0]" height="150" max-width="200" />
+              <v-col>
+                <p class="text-h5 mb-1 ml-4">{{ rental.name }}</p>
+                <p class="ml-4">{{ rental.type }} - {{ rental.subtype }}</p>
+                <v-row no-gutters class="mt-3">
+                  <v-btn class="rounded-sm mr-2" elevation="0" text>Ver página</v-btn>
+                  <v-btn v-if="rental.rentalId" class="rounded-sm" elevation="0" color="primary" nuxt :to="`rentals/${rental.rentalId}`">Administrar</v-btn>
+                </v-row>
+              </v-col>
+            </v-row>
+          </div>
+        </div>
         <div v-else>
           <p>No estas alquilando ningun inmueble... <nuxt-link to="/search">Buscar</nuxt-link></p>
         </div>
@@ -60,10 +74,21 @@ import { Component, Vue } from 'vue-property-decorator'
       this.loading = true
       Promise.all([
         this.$fire.firestore.collection('listings').where('user', '==', this.$store.state.authUser.uid).get(),
-        this.$fire.firestore.collection('rentals').where('tenant', '==', this.$store.state.authUser.uid).get(),
+        this.$fire.firestore.collection('rentals').where('tenant', '==', this.$store.state.authUser.uid).get().then(response => {
+          let listingsPromises: Promise<any>[] = []
+          response.docs.forEach(doc => {
+            listingsPromises.push(this.$fire.firestore.doc(`listings/${doc.data().listing}`).get())
+          })
+          return Promise.all(listingsPromises)
+        })
       ]).then(responses => {
-        responses[0].docs.forEach(document => this.listings.push(document.data()))
-        responses[1].docs.forEach(document => this.rentals.push(document.data()))
+        responses[0].docs.forEach(async document => this.listings.push({
+          ...document.data(),
+          rentalId: (await this.$fire.firestore.collection('rentals').where('listing', '==', document.id).get()).docs[0].id
+        }))
+        responses[1].forEach(async document => {
+          this.rentals.push({ ...document.data(), rentalId: (await this.$fire.firestore.collection('rentals').where('listing', '==', document.id).get()).docs[0].id })
+        })
         this.loading = false
       })
     }

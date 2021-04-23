@@ -23,7 +23,7 @@
             </v-list-item>
           </v-list-item-group>
         </v-list>
-        <v-btn icon x-large class="align-self-center mb-6">
+        <v-btn icon x-large class="align-self-center mb-6" @click="logout">
           <img src="@/assets/images/logout-icon.svg" alt="Logout" style="width: 35px; height: 35px;">
         </v-btn>
       </div>
@@ -79,6 +79,22 @@
         </v-window>
       </v-card>
     </v-dialog>
+    <v-snackbar
+      v-model="logoutSnackbar"
+      :timeout="2000"
+    >
+      Has cerrado sesión
+
+      <template v-slot:action="{ attrs }">
+        <v-btn
+          text
+          v-bind="attrs"
+          @click="snackbar = false"
+        >
+          Cerrar
+        </v-btn>
+      </template>
+    </v-snackbar>
   </v-app>
 </template>
 
@@ -105,6 +121,7 @@ import { mapState } from 'vuex'
     localUser!: any
     showLoginModal = false
     step = 1
+    logoutSnackbar = false
     
     //login variables
     email: string = ''
@@ -214,6 +231,12 @@ import { mapState } from 'vuex'
           this.registrationLoading = false
         })
       }
+    }
+
+    logout() {
+      this.$fire.auth.signOut().then(() => {
+        this.logoutSnackbar = true
+      })
     }
 
     @Watch('showLoginModal')

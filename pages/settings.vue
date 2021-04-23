@@ -31,7 +31,7 @@
           <div class="text-left">
             <p>Sube aqui una foto de la cara principal de tu documento de identificación</p>
             <div class="image-upload-block mb-2" @click="$refs.documentInput.click()">
-              <img v-if="!documentImagePreview && !userDoc.document.image" class="upload-plus-icon" src="@/assets/images/plus-icon.svg" alt="Add">
+              <img v-if="!documentImagePreview && !userDoc.document" class="upload-plus-icon" src="@/assets/images/plus-icon.svg" alt="Add">
               <v-img v-else contain :src="documentImagePreview || userDoc.document.image" max-height="100%" />
               <input ref="documentInput" type="file" accept="image/*" style="display: none" @change="handleDocumentInput">
             </div>

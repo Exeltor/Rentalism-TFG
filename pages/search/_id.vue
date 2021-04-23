@@ -112,6 +112,7 @@ import { Component, Vue } from 'vue-property-decorator'
           owner: this.listingData.user,
           approxStartDate: this.selectedRentalDateRange[0],
           approxEndDate: this.selectedRentalDateRange[1],
+          listing: this.$route.params.id,
           status: 'created'
         })
       } else {
