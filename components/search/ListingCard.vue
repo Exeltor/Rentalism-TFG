@@ -21,7 +21,7 @@
           </div>
         </div>
       </div>
-      <v-col class="ml-2">
+      <v-col class="ml-2" style="color: rgba(0, 0, 0, 0.87)">
         <p class="text-h5 mb-0">{{ item.name }}</p>
         <p class="mb-0">{{ item.type }} - {{ item.subtype }}</p>
         <p class="mb-10"><img src="@/assets/images/area-icon.svg" style="height: 1.2rem; vertical-align: sub" class="mr-1">{{ item.metres }} m2</p>
@@ -57,6 +57,12 @@ img {
   border-radius: 2rem;
   border: #ECECEC solid 1px;
   height: 200px;
+  transition: 0.3s all;
+  cursor: pointer;
+
+  &:hover {
+    border: #cccccc solid 1px;
+  }
 }
 .picture-container {
   height: 180px;

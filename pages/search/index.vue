@@ -59,7 +59,9 @@
               <template slot-scope="{ results: { hits } }">
                 <ais-hits v-if="hits.length > 0" :class-names="{ 'ais-Hits-list': 'results-list', 'ais-Hits-item': null }">
                   <div slot="item" slot-scope="{ item }">
-                    <listing-card :item="item" />
+                    <nuxt-link :to="`/search/${item.objectID}`">
+                      <listing-card :item="item" />
+                    </nuxt-link>
                   </div>
                 </ais-hits>
                 <div v-else class="content">

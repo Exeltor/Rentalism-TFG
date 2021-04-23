@@ -17,10 +17,12 @@
     "core-js": "^3.8.3",
     "firebase": "^8.2.6",
     "nuxt": "^2.14.12",
-    "nuxt-gmaps": "^1.2.10",
+    "swiper": "5.x",
+    "vue-awesome-swiper": "^4.1.1",
     "vue-class-component": "^7.2.6",
     "vue-instantsearch": "^3.6.0",
     "vue-property-decorator": "^9.1.2",
+    "vue2-google-maps": "^0.10.7",
     "vuelidate": "^0.7.6",
     "vuexfire": "^3.2.5"
   },
