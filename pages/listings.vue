@@ -25,7 +25,7 @@
                 <p class="text-h5 mb-1 ml-4">{{ listing.name }}</p>
                 <p class="ml-4">{{ listing.type }} - {{ listing.subtype }}</p>
                 <v-row no-gutters class="mt-3">
-                  <v-btn class="rounded-sm mr-2" elevation="0" text>Ver página</v-btn>
+                  <v-btn class="rounded-sm mr-2" elevation="0" text nuxt :to="`/search/${listing.id}`">Ver página</v-btn>
                   <v-btn v-if="listing.rentalId" class="rounded-sm" elevation="0" color="primary" nuxt :to="`rentals/${listing.rentalId}`">Administrar</v-btn>
                 </v-row>
               </v-col>
@@ -46,7 +46,7 @@
                 <p class="text-h5 mb-1 ml-4">{{ rental.name }}</p>
                 <p class="ml-4">{{ rental.type }} - {{ rental.subtype }}</p>
                 <v-row no-gutters class="mt-3">
-                  <v-btn class="rounded-sm mr-2" elevation="0" text>Ver página</v-btn>
+                  <v-btn class="rounded-sm mr-2" elevation="0" text nuxt :to="`search/${rental.id}`">Ver página</v-btn>
                   <v-btn v-if="rental.rentalId" class="rounded-sm" elevation="0" color="primary" nuxt :to="`rentals/${rental.rentalId}`">Administrar</v-btn>
                 </v-row>
               </v-col>
@@ -62,7 +62,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from 'vue-property-decorator'
+import { Component, Vue, Watch } from 'vue-property-decorator'
 
   @Component
   export default class ListingsPage extends Vue {
@@ -84,10 +84,11 @@ import { Component, Vue } from 'vue-property-decorator'
       ]).then(responses => {
         responses[0].docs.forEach(async document => this.listings.push({
           ...document.data(),
-          rentalId: (await this.$fire.firestore.collection('rentals').where('listing', '==', document.id).get()).docs[0].id
+          id: document.id,
+          rentalId: (await this.$fire.firestore.collection('rentals').where('listing', '==', document.id).get()).docs[0]?.id
         }))
         responses[1].forEach(async document => {
-          this.rentals.push({ ...document.data(), rentalId: (await this.$fire.firestore.collection('rentals').where('listing', '==', document.id).get()).docs[0].id })
+          this.rentals.push({ ...document.data(), id: document.id, rentalId: (await this.$fire.firestore.collection('rentals').where('listing', '==', document.id).get()).docs[0].id })
         })
         this.loading = false
       })
