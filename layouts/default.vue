@@ -218,7 +218,8 @@ import { mapState } from 'vuex'
           const userUid = response.user!.uid
           console.log(userUid)
           this.$fire.firestore.doc(`users/${userUid}`).set({
-            name: this.registrationName
+            name: this.registrationName,
+            email: this.registrationEmail
           }).then(() => {
             this.registrationLoading = false
             this.showLoginModal = false
