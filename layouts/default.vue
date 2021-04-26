@@ -194,7 +194,7 @@ import { mapState } from 'vuex'
       this.$v.password.$touch()
       if(!this.$v.email.$invalid && !this.$v.password.$invalid) {
         this.$fire.auth.signInWithEmailAndPassword(this.email, this.password).then(response => {
-          
+          this.showLoginModal = false
         }).catch(() => {
           this.showLoginError = true
           setTimeout(() => { this.showLoginError = false }, 3000)

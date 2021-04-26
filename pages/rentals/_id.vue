@@ -12,8 +12,8 @@
       <v-divider class="mb-5" />
       <v-row style="height: 90vh">
         <v-col cols="8">
-          <TenantView v-if="rentalData.tenant === $store.state.authUser.uid" />
-          <OwnerView v-if="rentalData.owner === $store.state.authUser.uid" />
+          <TenantView v-if="rentalData.tenant === $store.state.authUser.uid" :other-person-data="otherPersonData" />
+          <OwnerView v-if="rentalData.owner === $store.state.authUser.uid" :other-person-data="otherPersonData"/>
         </v-col>
         <v-col cols="4">
           <div class="rounded chat-main pa-4" style="height: 100%; background-color: white">
@@ -70,13 +70,19 @@ import OwnerView from '@/components/rentals/OwnerView.vue'
       this.$fire.firestore.doc(`rentals/${this.$route.params.id}`).get().then(async result => {
         this.rentalData = result.data()!
         this.listingData = (await this.$fire.firestore.doc(`listings/${this.rentalData.listing}`).get()).data()
+        console.log(this.$store.state.authUser.uid, 'my uid')
+        console.log(this.rentalData.owner, 'owner uid')
+        console.log(this.rentalData.tenant, 'tenant uid')
         if(this.$store.state.authUser.uid === this.rentalData.owner) {
+          console.log('i am owner')
           this.$fire.firestore.doc(`users/${this.rentalData.tenant}`).get().then(result => {
             this.otherPersonData = result.data()
           })
         } else if (this.$store.state.authUser.uid === this.rentalData.tenant) {
+          console.log('i am tenant')
           this.$fire.firestore.doc(`users/${this.rentalData.owner}`).get().then(result => {
             this.otherPersonData = result.data()
+            console.log(this.otherPersonData)
           })
         }
 
