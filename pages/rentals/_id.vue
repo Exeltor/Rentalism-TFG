@@ -12,8 +12,8 @@
       <v-divider class="mb-5" />
       <v-row style="height: 90vh">
         <v-col cols="8">
-          <TenantView v-if="rentalData.tenant === $store.state.authUser.uid" :other-person-data="otherPersonData" />
-          <OwnerView v-if="rentalData.owner === $store.state.authUser.uid" :other-person-data="otherPersonData"/>
+          <TenantView v-if="rentalData.tenant === $store.state.authUser.uid && otherPersonData" :other-person-data="otherPersonData" />
+          <OwnerView v-if="rentalData.owner === $store.state.authUser.uid && otherPersonData" :other-person-data="otherPersonData"/>
         </v-col>
         <v-col cols="4">
           <div class="rounded chat-main pa-4" style="height: 100%; background-color: white">

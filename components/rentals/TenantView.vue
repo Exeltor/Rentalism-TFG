@@ -11,32 +11,12 @@
       </div>
       <div v-else class="pa-5" style="height: inherit; width: inherit; display: flex; flex-direction: column; justify-content: center; align-items: center">
         <div v-if="rentalData.status === 'created'" style="display: flex; flex-direction: column; justify-content: center; align-items: center">
-          <p class="text-h4">{{ otherPersonData.name }}</p>
-          <p>esta interesado en alquilar esta propiedad para el siguiente periodo estimado:</p>
-          <p class="text-h5">{{ rentalData.approxStartDate }} - {{ rentalData.approxEndDate }}</p>
-          <div style="display: flex; flex-direction: row; height: auto">
-            <v-btn class="rounded mr-3" x-large elevation="0" color="primary" outlined @click="showDenyDialog = true">
-              Denegar
-            </v-btn>
-            <v-btn class="rounded" x-large elevation="0" color="primary" @click="acceptRental">
-              Aceptar
-            </v-btn>
-          </div>
+          <p class="text-h5 text-center">Esta sección se actualizara una vez que el propietario haya aceptado la peticion de alquiler</p>
+          <p>Vuelve a entrar más tarde o espera</p>
         </div>
         <div v-else-if="rentalData.status === 'contract_formalization'" style="display: flex; flex-direction: column; justify-content: center; align-items: center">
-          <v-row>
-            <v-col>
-              <p class="mb-0">En el siguiente campo, haga click o arrastre el contrato de alquiler rellenado para su posterior firma y aceptación</p>
-              <p class="text-caption align-self-start">En formato pdf</p>
-            </v-col>
-            <v-col>
-              <div class="image-upload-block mb-2" @click="$refs.documentInput.click()">
-                <img v-if="!documentImagePreview && !userDoc.document" class="upload-plus-icon" src="@/assets/images/plus-icon.svg" alt="Add">
-                <v-img v-else contain :src="documentImagePreview || userDoc.document.image" max-height="100%" />
-                <input ref="documentInput" type="file" accept="image/*" style="display: none" @change="handleDocumentInput">
-              </div>
-            </v-col>
-          </v-row>
+          <p class="text-h4 text-center">¡El propietario ha aceptado tu peticion de alquiler!</p>
+          <p class="text-center">Aqui aparecera el contrato de alquiler una vez que el propietario lo suba, el cual podras aceptar si estas de acuerdo con las condiciones</p>
         </div>
       </div>
     </div>

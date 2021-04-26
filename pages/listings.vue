@@ -85,7 +85,7 @@ import { Component, Vue, Watch } from 'vue-property-decorator'
         responses[0].docs.forEach(async document => this.listings.push({
           ...document.data(),
           id: document.id,
-          rentalId: (await this.$fire.firestore.collection('rentals').where('listing', '==', document.id).where('tenant', '==', this.$store.state.authUser.uid).get()).docs[0]?.id
+          rentalId: (await this.$fire.firestore.collection('rentals').where('listing', '==', document.id).where('owner', '==', this.$store.state.authUser.uid).get()).docs[0]?.id
         }))
         responses[1].forEach(async document => {
           this.rentals.push({ ...document.data(), id: document.id, rentalId: (await this.$fire.firestore.collection('rentals').where('listing', '==', document.id).where('tenant', '==', this.$store.state.authUser.uid).get()).docs[0].id })
