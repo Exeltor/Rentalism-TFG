@@ -26,15 +26,33 @@
         <div v-else-if="rentalData.status === 'contract_formalization'" style="display: flex; flex-direction: column; justify-content: center; align-items: center">
           <v-row>
             <v-col>
-              <p class="mb-0">En el siguiente campo, haga click o arrastre el contrato de alquiler rellenado para su posterior firma y aceptación</p>
-              <p class="text-caption align-self-start">En formato pdf</p>
-            </v-col>
-            <v-col>
-              <div class="image-upload-block mb-2" @click="$refs.documentInput.click()">
-                <img v-if="!documentImagePreview && !userDoc.document" class="upload-plus-icon" src="@/assets/images/plus-icon.svg" alt="Add">
-                <v-img v-else contain :src="documentImagePreview || userDoc.document.image" max-height="100%" />
-                <input ref="documentInput" type="file" accept="image/*" style="display: none" @change="handleDocumentInput">
-              </div>
+              <v-row align="center" justify="center">
+                <v-col >
+                  <p class="text-h5 text-center">Una vez subido el contrato, espere que el inquilino acepte los terminos</p>
+                </v-col>
+              </v-row>
+              <v-divider class="mb-10" />
+              <v-row>
+                <v-col>
+                  <p class="mb-0">En el siguiente campo, haga click o arrastre el contrato de alquiler rellenado para su posterior firma y aceptación</p>
+                  <p class="text-caption align-self-start">En formato pdf</p>
+                </v-col>
+                <v-col>
+                  <div class="contract-upload-block mb-2 pa-2" @click="!contractUploadLoading ? $refs.documentInput.click() : null" @dragover.prevent @drop.prevent="handleDocumentDrop">
+                    <v-progress-circular v-if="contractUploadLoading" color="primary" indeterminate />
+                    <img v-if="!rentalData.contract_url && !contractUploadLoading" class="upload-plus-icon" src="@/assets/images/plus-icon.svg" alt="Add">
+                    <div v-if="rentalData.contract_url && !contractUploadLoading">
+                      <p>¡Contrato subido! <v-icon color="primary">mdi-check</v-icon></p>
+                      <p class="text-caption">Arrastra o haz click para subir otro contrato y reemplazar el existente</p>
+                    </div>
+                    <input ref="documentInput" type="file" accept="application/pdf" style="display: none" @change="handleDocumentInput">
+                  </div>
+                  <v-expand-transition>
+                    <v-alert v-if="showContractError" text type="error">Solo se admite el formato .pdf</v-alert>
+                  </v-expand-transition>
+                  <a v-if="rentalData.contract_url" :href="rentalData.contract_url">Ver contrato subido</a>
+                </v-col>
+              </v-row>
             </v-col>
           </v-row>
         </div>
@@ -79,6 +97,8 @@ import { mapState } from 'vuex'
     accountLink: any = null
     showDenyDialog: boolean = false
     denyMotiveText: string = ''
+    contractUploadLoading: boolean = false
+    showContractError: boolean = false
 
     mounted() {
       const retrieveAccountData = this.$fire.functions.httpsCallable('stripe-retrieveConnectedAccountData')
@@ -107,6 +127,34 @@ import { mapState } from 'vuex'
       this.$fire.firestore.doc(`rentals/${this.$route.params.id}`).update({ status: 'contract_formalization' })
     }
 
+    handleDocumentInput(e: any) {
+      if (e.target.files) {
+        const file = e.target.files[0]
+        this.uploadContract(file)
+      }
+    }
+
+    handleDocumentDrop(e: any) {
+      if (e.dataTransfer.files) {
+        const file = e.dataTransfer.files[0]
+        if (file.name.split('.').pop() === 'pdf') {
+          this.uploadContract(file)
+        } else {
+          this.showContractError = true
+          setTimeout(() => this.showContractError = false, 3000)
+        }
+      }
+    }
+
+    uploadContract(file: any) {
+      this.contractUploadLoading = true
+      this.$fire.storage.ref(`rentals/${this.$route.params.id}/contrato_alquiler.pdf`).put(new Blob([file])).then(async response => {
+        this.$fire.firestore.doc(`rentals/${this.$route.params.id}`).update({ contract_url: await response.ref.getDownloadURL() }).then(() => {
+          this.contractUploadLoading = false
+        })
+      })
+    }
+
     @Watch('stripeUserData')
     getAccountLink() {
       if(this.stripeUserData.requirements) {
@@ -133,5 +181,25 @@ import { mapState } from 'vuex'
 </script>
 
 <style lang="scss" scoped>
+.contract-upload-block {
+  width: 100%;
+  height: 8rem;
+  background-color: rgba(0, 0, 0, 0.06);
+  border-radius: 2rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  transition: all 0.3s;
+  cursor: pointer;
 
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.15);
+  }
+
+  .upload-plus-icon {
+    height: 3rem;
+    width: 3rem;
+  }
+}
 </style>
