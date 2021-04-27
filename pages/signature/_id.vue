@@ -100,7 +100,7 @@ import vueSignature from 'vue-signature';
           ia[i] = byteString.charCodeAt(i);
       }
 
-      return new Blob([ia], { type: mimeString });
+      return new Blob([ia.buffer], { type: mimeString });
     }
   }
 </script>
