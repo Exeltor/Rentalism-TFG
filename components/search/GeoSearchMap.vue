@@ -22,7 +22,9 @@
 
 <script lang="ts">
 import { Component, Vue, Watch } from 'vue-property-decorator'
+// @ts-ignore
 import { createWidgetMixin } from 'vue-instantsearch'
+// @ts-ignore
 import { connectGeoSearch } from 'instantsearch.js/es/connectors'
  
   @Component({

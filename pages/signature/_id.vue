@@ -33,6 +33,7 @@
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
+// @ts-ignore
 import vueSignature from 'vue-signature';
 
   @Component({
