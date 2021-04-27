@@ -17,7 +17,6 @@
       <v-btn class="rounded" x-large elevation="0" color="primary" style="width: 300px" @click="sign" :loading="signLoading">
         Firmar
       </v-btn>
-      <p>{{ signature }}</p>
       <v-dialog v-model="showSuccessDialog" persistent fullscreen>
         <v-card style="height: 100vh; width: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center">
           <v-icon color="primary" size="100">mdi-check</v-icon>
@@ -49,7 +48,6 @@ import vueSignature from 'vue-signature';
     personaFirma: any = ''
     showSuccessDialog: boolean = false
     signLoading = false;
-    signature: any = null
 
     mounted() {
       this.$fire.firestore.doc(`rentals/${this.$route.params.id}`).get().then(result => {
@@ -65,9 +63,9 @@ import vueSignature from 'vue-signature';
 
     async sign() {
       this.signLoading = true
-      this.signature = (this.$refs.signature as any).save('image/jpeg')
+      const signature = (this.$refs.signature as any).save('image/jpeg')
       if(this.personaFirma === 'tenant') {
-        this.$fire.storage.ref(`rentals/${this.$route.params.id}/tenantSignature.jpeg`).put(await (await fetch(this.signature)).blob()).then(result => {
+        this.$fire.storage.ref(`rentals/${this.$route.params.id}/tenantSignature.jpeg`).put(await (await fetch(signature)).blob()).then(result => {
           result.ref.getDownloadURL().then(downloadurl => {
             this.$fire.firestore.doc(`rentals/${this.$route.params.id}`).update({ tenantSignature: downloadurl })
             this.signLoading = false
@@ -75,7 +73,7 @@ import vueSignature from 'vue-signature';
           })
         })
       } else {
-        this.$fire.storage.ref(`rentals/${this.$route.params.id}/ownerSignature.jpeg`).put(await (await fetch(this.signature)).blob()).then(result => {
+        this.$fire.storage.ref(`rentals/${this.$route.params.id}/ownerSignature.jpeg`).put(await (await fetch(signature)).blob()).then(result => {
           result.ref.getDownloadURL().then(downloadurl => {
             this.$fire.firestore.doc(`rentals/${this.$route.params.id}`).update({ ownerSignature: downloadurl })
             this.signLoading = false
