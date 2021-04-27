@@ -125,6 +125,6 @@ export default {
 
   // Build Configuration: https://go.nuxtjs.dev/config-build
   build: {
-    transpile: ['vue-instantsearch', 'instantsearch.js/es', /^vue2-google-maps($|\/)/],
+    transpile: ['vue-instantsearch', 'instantsearch.js/es', /^vue2-google-maps($|\/)/, 'vue-signature', 'vue-qrcode'],
   },
 }

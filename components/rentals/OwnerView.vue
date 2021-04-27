@@ -74,8 +74,16 @@
                   </div>
                 </v-col>
                 <v-col v-if="rentalData.downpayment_invoice" style="display: flex; flex-direction: column; justify-content: center; align-items: center">
-                  <v-icon color="primary" size="100">{{ invoiceData.stripeInvoiceStatus === 'paid' ? 'mdi-check' : 'mdi-timer-sand' }}</v-icon>
-                  <p>{{ invoiceData.stripeInvoiceStatus === 'paid' ? 'Se ha realizado el pago' : 'Pago pendiente' }}</p>
+                  <v-icon color="primary" size="100" v-if="invoiceData">{{ invoiceData.stripeInvoiceStatus === 'paid' ? 'mdi-check' : 'mdi-timer-sand' }}</v-icon>
+                  <p v-if="invoiceData">{{ invoiceData.stripeInvoiceStatus === 'paid' ? 'Se ha realizado el pago' : 'Pago pendiente' }}</p>
+                </v-col>
+              </v-row>
+              <v-row>
+                <v-col style="display: flex; flex-direction: column; justify-content: center">
+                  <div class="text-center">
+                    <vue-qrcode :width="200" :scale="1" :value="`https://rentalism.herokuapp.com/signature/${$route.params.id}?role=owner`" />
+                  </div>
+                  <p class="text-center">Escanea este codigo QR en el movil para firmar el contrato</p>
                 </v-col>
               </v-row>
             </v-col>
@@ -120,13 +128,17 @@
 <script lang="ts">
 import { Component, Prop, Vue, Watch } from 'vue-property-decorator'
 import { mapState } from 'vuex'
+import VueQrcode from 'vue-qrcode'
 
   @Component({
     computed: {
       ...mapState({
         userDoc: 'userDoc'
       })
-    }
+    },
+    components: {
+      VueQrcode,
+    },
   })
   export default class OwnerView extends Vue {
      @Prop({ type: Object, required: true }) readonly otherPersonData!: any
