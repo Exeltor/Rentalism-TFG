@@ -61,11 +61,11 @@ import vueSignature from 'vue-signature';
       (this.$refs.signature as any).clear()
     }
 
-    sign() {
+    async sign() {
       this.signLoading = true
       const signature = (this.$refs.signature as any).save('image/jpeg')
       if(this.personaFirma === 'tenant') {
-        this.$fire.storage.ref(`rentals/${this.$route.params.id}/tenantSignature.jpeg`).put(this.dataURItoBlob(signature)).then(result => {
+        this.$fire.storage.ref(`rentals/${this.$route.params.id}/tenantSignature.jpeg`).put(await (await fetch(signature)).blob()).then(result => {
           result.ref.getDownloadURL().then(downloadurl => {
             this.$fire.firestore.doc(`rentals/${this.$route.params.id}`).update({ tenantSignature: downloadurl })
             this.signLoading = false
@@ -73,7 +73,7 @@ import vueSignature from 'vue-signature';
           })
         })
       } else {
-        this.$fire.storage.ref(`rentals/${this.$route.params.id}/ownerSignature.jpeg`).put(this.dataURItoBlob(signature)).then(result => {
+        this.$fire.storage.ref(`rentals/${this.$route.params.id}/ownerSignature.jpeg`).put(await (await fetch(signature)).blob()).then(result => {
           result.ref.getDownloadURL().then(downloadurl => {
             this.$fire.firestore.doc(`rentals/${this.$route.params.id}`).update({ ownerSignature: downloadurl })
             this.signLoading = false
@@ -81,26 +81,6 @@ import vueSignature from 'vue-signature';
           })
         })
       }
-    }
-
-    dataURItoBlob(dataURI:any) {
-      // convert base64/URLEncoded data component to raw binary data held in a string
-      var byteString;
-      if (dataURI.split(',')[0].indexOf('base64') >= 0)
-          byteString = atob(dataURI.split(',')[1]);
-      else
-          byteString = unescape(dataURI.split(',')[1]);
-
-      // separate out the mime component
-      var mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
-
-      // write the bytes of the string to a typed array
-      var ia = new Uint8Array(byteString.length);
-      for (var i = 0; i < byteString.length; i++) {
-          ia[i] = byteString.charCodeAt(i);
-      }
-
-      return new Blob([ia.buffer], { type: mimeString });
     }
   }
 </script>
