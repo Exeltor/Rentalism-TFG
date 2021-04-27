@@ -25,6 +25,7 @@ export default {
   // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
   plugins: [
     '~/plugins/vuelidate.js',
+    '~/plugins/vue-chat-scroll',
     { src: '~/plugins/algolia', mode: 'client' },
     { src: '~/plugins/maps', mode: 'client' },
     { src: '@/plugins/swiper', mode: 'client' },

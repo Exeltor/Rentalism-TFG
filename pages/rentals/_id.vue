@@ -22,8 +22,8 @@
               <p v-if="otherPersonData" class="mb-0 font-weight-bold">{{ otherPersonData.name }}</p>
             </div>
             <v-divider />
-            <div class="message-container">
-              <div v-if="messages.length > 0" style="height: inherit; width: 100%" class="message-wrapper">
+            <div class="message-container pr-2 pt-1" v-chat-scroll="{smooth: true, scrollonremoved:true, smoothonremoved: false}">
+              <div v-if="messages.length > 0" style="width: 100%" class="message-wrapper">
                 <div v-for="message in messages" :key="message.id" class="pa-2 rounded message-bubble" style="background-color: #eeeeee;" :style="message.sender !== $store.state.authUser.uid ? 'align-self: flex-start;' : 'align-self: flex-end;'">
                   <p v-if="otherPersonData" class="mb-0 font-weight-bold" :class="message.sender !== $store.state.authUser.uid ? 'text-left' : 'text-right'">{{ message.sender !== $store.state.authUser.uid ? otherPersonData.name : 'Tú' }}</p>
                   <p style="white-space: pre-wrap;">{{ message.message }}</p>
@@ -138,7 +138,9 @@ import OwnerView from '@/components/rentals/OwnerView.vue'
 
   .message-container {
     display: flex;
-    flex-grow: 1;
+    flex: 1 1 auto;
+    height: 0px;
+    overflow-y: auto;
 
     .empty-messages-placeholder {
       display: flex;
@@ -151,10 +153,12 @@ import OwnerView from '@/components/rentals/OwnerView.vue'
       display: flex;
       flex-direction: column;
       justify-content: flex-end;
+      height: fit-content;
 
       .message-bubble:not(:last-child) {
         margin-bottom: .8rem;
       }
+      
     }
   }
 

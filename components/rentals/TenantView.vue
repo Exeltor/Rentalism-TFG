@@ -26,6 +26,9 @@
             </v-btn>
           </div>
         </div>
+        <div v-else-if="rentalData.status === 'down_payment'" style="display: flex; flex-direction: column; justify-content: center; align-items: center">
+          <p class="text-h4 text-center">Realice el envio del cobro de la fianza, para posteriormente firmar el contrato</p>
+        </div>
       </div>
     </div>
   </div>
