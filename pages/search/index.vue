@@ -1,9 +1,9 @@
 <template>
-  <div>
+  <div style="overflow: hidden">
     <client-only>
       <ais-instant-search :search-client="searchClient" index-name="listings">
         <v-row no-gutters class="full-height">
-          <v-col class="pa-2">
+          <v-col class="pa-2" style="overflow-y: scroll; overflow-x: hidden; max-height: 100%">
             <p class="text-h4 font-weight-bold">Tu busqueda</p>
             <v-row>
               <v-col>
