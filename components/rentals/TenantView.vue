@@ -59,9 +59,9 @@
             </v-col>
           </v-row>
           <v-divider class="my-4" />
-          <v-row>
-            <v-col v-if="rentalData.tenantSignature && rentalData.ownerSignature">
-              <p>¡Ambas partes han firmado el contrato!</p>
+          <v-row class="text-center">
+            <v-col v-if="rentalData.tenantSignature && rentalData.ownerSignature && invoiceData && invoiceData.stripeInvoiceStatus === 'paid'">
+              <p>¡Ambas partes han firmado el contrato y la fianza ha sido pagada!</p>
               <p>Dale click al siguiente boton para comenzar el proceso de alquiler</p>
               <v-btn class="rounded" x-large elevation="0" color="primary" block @click="confirmRental" :disabled="rentalData.tenant_confirm">
                 {{ rentalData.tenant_confirm ? 'Alquiler confirmado' : 'Confirmar alquiler' }}
@@ -69,7 +69,38 @@
               <p class="text-caption">Una vez que ambas partes acepten, automaticamente de dirigiras a la siguiente pantalla</p>
             </v-col>
             <v-col v-else>
-              <p>Aqui aparecera el boton de confirmación del alquiler una vez que ambas partes hayan firmado</p>
+              <p>Aqui aparecera el boton de confirmación del alquiler una vez que ambas partes hayan firmado y la fianza haya sido pagada</p>
+            </v-col>
+          </v-row>
+        </div>
+        <div v-else-if="rentalData.status === 'ongoing'" style="height: 100%">
+          <v-row style="height: 100%">
+            <v-col>
+              <p class="text-h5">Alquiler en proceso</p>
+              <p>Aqui puede visualizar el contrato, asi como los pagos requeridos por el propietario</p>
+              <v-btn class="rounded mb-6" x-large block elevation="0" color="primary" :href="rentalData.contract_url">
+                Descargar contrato de alquiler
+              </v-btn>
+              <div style="height: 50%; overflow-y: auto">
+                <div v-if="additionalInvoices.length === 0" style="display: flex; flex-direction: column; justify-content: center; align-center: center; height: 100%; width: 100%">
+                  <p class="ma-0 text-center">No hay facturas por pagar, y tampoco hay historial de pagos</p>
+                </div>
+                <v-list v-else>
+                  <v-row no-gutters align="center" class="py-6" style="position: sticky; top: 0; background-color: white; z-index: 500">
+                    <p class="mb-0 font-weight-bold">Lista de facturas</p>
+                  </v-row>
+                  <div v-for="(invoice, index) in additionalInvoices" :key="index">
+                    <v-divider class="pa-0 mb-6" />
+                    <v-row no-gutters align="center">
+                      <p class="ma-0">{{ invoice.items[0].description }}</p>
+                      <v-spacer />
+                      <p class="ma-0">{{ invoice.items[0].amount / 100 }}€</p>
+                      <v-btn class="rounded-sm" text :href="invoice.stripeInvoiceUrl" target="_blank">{{ invoice.stripeInvoiceStatus !== 'paid' ? 'Pagar' : 'Pagado, ver justificante' }}</v-btn>
+                    </v-row>
+                    <v-divider class="pa-0 mt-6" />
+                  </div>
+                </v-list>
+              </div>
             </v-col>
           </v-row>
         </div>
@@ -106,6 +137,8 @@ import VueQrcode from 'vue-qrcode'
     denyMotiveText: string = ''
     invoiceListener: any = null
     invoiceData: any = null
+    additionalInvoices: any[] = []
+    additionalInvoiceListener: any = null
 
     mounted() {
       const retrieveAccountData = this.$fire.functions.httpsCallable('stripe-retrieveConnectedAccountData')
@@ -119,6 +152,9 @@ import VueQrcode from 'vue-qrcode'
         this.listingData = (await this.$fire.firestore.doc(`listings/${this.rentalData.listing}`).get()).data()
         this.rentalDataListener = this.$fire.firestore.doc(`rentals/${this.$route.params.id}`).onSnapshot(rental => {
           this.rentalData = rental.data()
+          this.additionalInvoiceListener = this.$fire.firestore.collection('invoices').where(this.$fireModule.firestore.FieldPath.documentId(), 'in', this.rentalData.additionalInvoices).onSnapshot(data => {
+            this.additionalInvoices = data.docs.map(doc => doc.data())
+          })
         })
         this.loading = false
       }).catch(error => {
@@ -129,6 +165,7 @@ import VueQrcode from 'vue-qrcode'
     beforeDestroy() {
       if (this.rentalDataListener) this.rentalDataListener()
       if (this.invoiceListener) this.invoiceListener()
+      if (this.additionalInvoiceListener) this.additionalInvoiceListener()
     }
 
     acceptContract() {

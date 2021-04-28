@@ -108,8 +108,57 @@
             </v-col>
           </v-row>
         </div>
+        <div v-else-if="rentalData.status === 'ongoing'" style="height: 100%">
+          <v-row style="height: 100%">
+            <v-col>
+              <p class="text-h5">Alquiler en proceso</p>
+              <p>Aqui puede visualizar el contrato, asi como los pagos requeridos por el propietario</p>
+              <v-btn class="rounded mb-6" x-large block elevation="0" color="primary" :href="rentalData.contract_url">
+                Descargar contrato de alquiler
+              </v-btn>
+              <div style="height: 50%; overflow-y: auto">
+                <div v-if="additionalInvoices.length === 0" style="display: flex; flex-direction: column; justify-content: center; align-center: center; height: 100%; width: 100%">
+                  <p class="text-center">No hay facturas por pagar, y tampoco hay historial de pagos</p>
+                  <v-btn x-large color="primary" class="rounded" outlined @click="showAdditionalInvoiceDialog = true">Crear nuevo pago</v-btn>
+                </div>
+                <v-list v-else>
+                  <v-row no-gutters align="center" class="py-6" style="position: sticky; top: 0; background-color: white; z-index: 500">
+                    <p class="mb-0 font-weight-bold">Lista de facturas</p>
+                    <v-spacer />
+                    <v-btn class="rounded-sm" color="primary" @click="showAdditionalInvoiceDialog = true">Crear nueva factura</v-btn>
+                  </v-row>
+                  <div v-for="(invoice, index) in additionalInvoices" :key="index">
+                    <v-divider class="pa-0 mb-6" />
+                    <v-row no-gutters align="center">
+                      <p class="ma-0">{{ invoice.items[0].description }}</p>
+                      <v-spacer />
+                      <p class="ma-0">{{ invoice.items[0].amount / 100 }}€</p>
+                      <v-btn class="rounded-sm" text :disabled="invoice.stripeInvoiceStatus !== 'paid'" :href="invoice.stripeInvoiceUrl" target="_blank">{{ invoice.stripeInvoiceStatus !== 'paid' ? 'Pendiente' : 'Pagado, ver justificante' }}</v-btn>
+                    </v-row>
+                    <v-divider class="pa-0 mt-6" />
+                  </div>
+                </v-list>
+              </div>
+            </v-col>
+          </v-row>
+        </div>
       </div>
     </div>
+    <v-dialog v-model="showAdditionalInvoiceDialog" max-width="600px" rounded="xl">
+      <v-card class="pa-6">
+        <p class="text-h4">Crear nuevo pago</p>
+        <v-text-field v-model="additionalInvoiceName" class="rounded mb-3" filled rounded label="Nombre pago" hide-details="false" required />
+        <v-text-field v-model="additionalInvoiceAmount" class="rounded mb-3" filled rounded label="Cantidad" hide-details="false" type="number" required />
+        <div style="display: flex; flex-direction: row; height: auto; justify-content: center">
+          <v-btn class="rounded mr-3" x-large elevation="0" color="primary" outlined @click="showAdditionalInvoiceDialog = false">
+            Cancelar
+          </v-btn>
+          <v-btn class="rounded" x-large elevation="0" color="primary" @click="createAdditionalPayment">
+            Crear
+          </v-btn>
+        </div>
+      </v-card>
+    </v-dialog>
     <v-dialog v-model="showDenyDialog" max-width="600px" rounded="xl">
       <v-card class="pa-6">
         <p class="text-h4">Indique motivo de la denegación</p>
@@ -177,6 +226,11 @@ import VueQrcode from 'vue-qrcode'
     invoiceDownpaymentAmount: number = 0
     invoiceListener: any = null
     invoiceData: any = null
+    additionalInvoices: any[] = []
+    additionalInvoiceListener: any = null
+    showAdditionalInvoiceDialog: boolean = false
+    additionalInvoiceAmount: number = 0
+    additionalInvoiceName: string = ''
 
     mounted() {
       const retrieveAccountData = this.$fire.functions.httpsCallable('stripe-retrieveConnectedAccountData')
@@ -190,6 +244,9 @@ import VueQrcode from 'vue-qrcode'
         this.listingData = (await this.$fire.firestore.doc(`listings/${this.rentalData.listing}`).get()).data()
         this.rentalDataListener = this.$fire.firestore.doc(`rentals/${this.$route.params.id}`).onSnapshot(rental => {
           this.rentalData = rental.data()
+          this.additionalInvoiceListener = this.$fire.firestore.collection('invoices').where(this.$fireModule.firestore.FieldPath.documentId(), 'in', this.rentalData.additionalInvoices).onSnapshot(data => {
+            this.additionalInvoices = data.docs.map(doc => doc.data())
+          })
         })
         this.loading = false
       }).catch(error => {
@@ -215,7 +272,7 @@ import VueQrcode from 'vue-qrcode'
           email: this.otherPersonData.email,
           items: [
             {
-              amount: this.invoiceDownpaymentAmount * 100,
+              amount: (this.invoiceDownpaymentAmount * 100).toFixed(0),
               currency: 'eur',
               description: `Pago fianza de ${this.listingData.name}`
             }
@@ -225,6 +282,27 @@ import VueQrcode from 'vue-qrcode'
           }
         }).then(response => {
           this.$fire.firestore.doc(`rentals/${this.$route.params.id}`).update({ downpayment_invoice: response.id })
+        })
+      }
+    }
+
+    createAdditionalPayment() {
+      if(this.additionalInvoiceAmount > 0 && this.additionalInvoiceName) {
+        this.$fire.firestore.collection('invoices').add({
+          email: this.otherPersonData.email,
+          items: [
+            {
+              amount: (this.additionalInvoiceAmount * 100).toFixed(0),
+              currency: 'eur',
+              description: this.additionalInvoiceName
+            }
+          ],
+          transfer_data: {
+            destination: this.stripeUserData.id
+          }
+        }).then(response => {
+          this.$fire.firestore.doc(`rentals/${this.$route.params.id}`).update({ additionalInvoices: this.$fireModule.firestore.FieldValue.arrayUnion(response.id) })
+          this.showAdditionalInvoiceDialog = false
         })
       }
     }
@@ -291,6 +369,14 @@ import VueQrcode from 'vue-qrcode'
     handleDenyDialog(value: boolean) {
       if(!value) {
         this.denyMotiveText = ''
+      }
+    }
+
+    @Watch('showAdditionalInvoiceDialog')
+    handleAdditionalInvoiceDialog(value: boolean) {
+      if(!value) {
+        this.additionalInvoiceAmount = 0
+        this.additionalInvoiceName = ''
       }
     }
 
