@@ -160,15 +160,15 @@
       </v-row>
       <div v-if="descriptionBuilding" class="mt-5">
         <p class="text-h5">Descripción del edificio</p>
-        <p style="white-space: pre">{{ descriptionBuilding }}</p>
+        <p style="white-space: pre-wrap; word-wrap: break-word">{{ descriptionBuilding }}</p>
       </div>
       <div v-if="equipment" class="mt-5">
         <p class="text-h5">Equipamiento</p>
-        <p style="white-space: pre">{{ equipment }}</p>
+        <p style="white-space: pre-wrap; word-wrap: break-word">{{ equipment }}</p>
       </div>
       <div v-if="comments" class="mt-5">
         <p class="text-h5">Información adicional</p>
-        <p style="white-space: pre">{{ comments }}</p>
+        <p style="white-space: pre-wrap; word-wrap: break-word">{{ comments }}</p>
       </div>
     </v-col>
     <v-dialog v-model="openFinishDialog" persistent width="600px">

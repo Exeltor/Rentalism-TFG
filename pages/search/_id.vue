@@ -2,11 +2,11 @@
   <div>
     <client-only>
       <div class="mb-5" style="height: 400px; border-radius: 2rem; overflow: hidden">
-        <swiper ref="photoSwiper" :options="swiperComponentOption">
-          <swiper-slide v-for="photo in listingData.photos" :key="photo">
-            <img style="object-fit: cover; height: 400px" :src="photo">
-          </swiper-slide>
-        </swiper>
+        <v-carousel cycle height="400" show-arrows-on-hover hide-delimiter-background>
+          <v-carousel-item v-for="photo in listingData.photos" :key="photo">
+            <v-img :src="photo" height="400px" width="100%" />
+          </v-carousel-item>
+        </v-carousel>
       </div>
     </client-only>
     <v-row>
@@ -26,10 +26,12 @@
       <v-col cols="4">
         <div style="background-color: white; position: sticky; top: 2rem" class="rounded pa-6">
           <div v-if="ownerData">
-            <v-row no-gutters class="mb-4" align="center">
-              <img :src="ownerData.imageUrl || require('@/assets/images/user-icon.svg')" alt="user" style="height: 70px; width: 70px; object-fit: cover" class="rounded mr-4">
-              <p class="text-h5 font-weight-bold ma-0">{{ ownerData.name }}</p>
-            </v-row>
+            <nuxt-link :to="`/profile/${listingData.user}`">
+              <v-row no-gutters class="mb-4" align="center" style="color: black">
+                <img :src="ownerData.imageUrl || require('@/assets/images/user-icon.svg')" alt="user" style="height: 70px; width: 70px; object-fit: cover" class="rounded mr-4">
+                <p class="text-h5 font-weight-bold ma-0">{{ ownerData.name }}</p>
+              </v-row>
+            </nuxt-link>
             <div class="rounded mb-4" style="overflow: hidden">
               <GmapMap
                 ref="gMap"
@@ -43,8 +45,8 @@
                 />
               </GmapMap>
             </div>
-            <v-btn class="rounded" x-large elevation="0" block color="primary" @click="beginRentalDialog = true">
-              Iniciar proceso de alquiler
+            <v-btn class="rounded" x-large elevation="0" block color="primary" @click="beginRentalDialog = true" :disabled="$store.state.authUser === null || listingData.user === $store.state.authUser.uid">
+              {{ $store.state.authUser === null ? 'Registrese para iniciar el proceso' : listingData.user === $store.state.authUser.uid ? 'Eres el propietario' : 'Iniciar proceso de alquiler' }}
             </v-btn>
           </div>
           <div v-else>
@@ -96,12 +98,6 @@ import { Component, Vue } from 'vue-property-decorator'
       }).catch(error => {
         console.log(error)
       })
-    }
-    swiperComponentOption = {
-      loop: true,
-      slidesPerView: 3,
-      spaceBetween: 10,
-      slideClass: 'custom-slide-class'
     }
 
     createRental() {

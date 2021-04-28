@@ -1,7 +1,7 @@
 <template>
   <div style="overflow: hidden">
     <client-only>
-      <ais-instant-search :search-client="searchClient" index-name="listings">
+      <ais-instant-search :search-client="searchClient" index-name="listings" :routing="routing">
         <v-row no-gutters class="full-height">
           <v-col class="pa-2" style="overflow-y: scroll; overflow-x: hidden; max-height: 100%">
             <p class="text-h4 font-weight-bold">Tu busqueda</p>
@@ -65,7 +65,7 @@
                   </div>
                 </ais-hits>
                 <div v-else class="content">
-                  <h3>No results found!</h3>
+                  <h3>No se han encontrado resultados</h3>
                 </div>
               </template>
             </ais-state-results>
@@ -90,6 +90,18 @@ import ListingCard from '@/components/search/ListingCard.vue'
     components: {
       GeoSearchMap,
       ListingCard
+    },
+    asyncData({ query }) {
+      const dataSetter = {
+        type: null as any,
+        subtype: null as any
+      }
+      if(query.type) dataSetter.type = query.type
+      if(query.subtype) dataSetter.subtype = query.subtype
+
+      console.log(dataSetter)
+
+      return dataSetter
     }
   })
   export default class SearchPage extends Vue {
@@ -100,6 +112,35 @@ import ListingCard from '@/components/search/ListingCard.vue'
       'A9OBHA2F69',
       '0bcdcc6dbed35d8bf93b79bfd30b2eb3'
     )
+
+    mounted() {
+      if(this.$route.query.type) this.selectedType = this.$route.query.type
+      if(this.$route.query.subtype) this.selectedSubtype = this.$route.query.subtype
+    }
+
+    routing = {
+      stateMapping: {
+        stateToRoute(uiState: any) {
+          const indexUiState = uiState['listings'];
+          return {
+            q: indexUiState.query,
+            type: indexUiState.menu && indexUiState.menu.type,
+            subtype: indexUiState.menu && indexUiState.menu.subtype
+          }
+        },
+        routeToState(routeState: any) {
+          return {
+            ['listings']: {
+              query: routeState.q,
+              menu: {
+                type: routeState.type,
+                subtype: routeState.subtype
+              },
+            },
+          }
+        }
+      }
+    }
   }
 </script>
 

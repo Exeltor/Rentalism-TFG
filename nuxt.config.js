@@ -27,8 +27,7 @@ export default {
     '~/plugins/vuelidate.js',
     '~/plugins/vue-chat-scroll',
     { src: '~/plugins/algolia', mode: 'client' },
-    { src: '~/plugins/maps', mode: 'client' },
-    { src: '@/plugins/swiper', mode: 'client' },
+    { src: '~/plugins/maps', mode: 'client' }
   ],
 
   // Auto import components: https://go.nuxtjs.dev/config-components

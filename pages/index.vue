@@ -44,7 +44,7 @@
           <img slot="prepend-inner" src="@/assets/images/search-icon.svg" alt="search-icon" style="height: 25px; width: 25px">
         </v-text-field>
         <div class="text-right">
-          <v-btn class="rounded" x-large elevation="0" width="50%" color="primary">
+          <v-btn class="rounded" x-large elevation="0" width="50%" color="primary" @click="search">
             <div class="d-flex flex-row justify-end align-center" style="width: 100%">
               Buscar
               <img src="@/assets/images/arrow-right-white.svg" alt="arrow-right" style="width: 25px">
@@ -117,6 +117,15 @@ import { types, subtypes } from '@/helpers/constants'
     selectedType: string = ''
     selectedSubtype: string = ''
     city: string = ''
+
+    search() {
+      let searchString = '/search?'
+      if(this.selectedType) searchString = searchString.concat(`type=${this.selectedType}&`)
+      if(this.selectedSubtype) searchString = searchString.concat(`subtype=${this.selectedSubtype}&`)
+      if(this.city) searchString = searchString.concat(`q=${this.city}`)
+
+      this.$router.push(searchString)
+    }
 
     @Watch('selectedType')
     handle() {
