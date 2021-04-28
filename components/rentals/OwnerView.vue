@@ -78,12 +78,31 @@
                   <p v-if="invoiceData">{{ invoiceData.stripeInvoiceStatus === 'paid' ? 'Se ha realizado el pago' : 'Pago pendiente' }}</p>
                 </v-col>
               </v-row>
+              <v-divider class="my-4" />
               <v-row>
-                <v-col style="display: flex; flex-direction: column; justify-content: center">
+                <v-col v-if="!rentalData.ownerSignature" style="display: flex; flex-direction: column; justify-content: center">
                   <div class="text-center">
                     <vue-qrcode :width="200" :scale="1" :value="`https://rentalism.herokuapp.com/signature/${$route.params.id}?role=owner`" />
                   </div>
                   <p class="text-center">Escanea este codigo QR en el movil para firmar el contrato</p>
+                </v-col>
+                <v-col v-else style="display: flex; flex-direction: column; justify-content: center; align-items: center">
+                  <img :src="rentalData.ownerSignature" style="width: 200px">
+                  <p class="text-center">¡Contrato firmado correctamente!</p>
+                </v-col>
+              </v-row>
+              <v-divider class="my-4" />
+              <v-row>
+                <v-col v-if="rentalData.tenantSignature && rentalData.ownerSignature">
+                  <p>¡Ambas partes han firmado el contrato!</p>
+                  <p>Dale click al siguiente boton para comenzar el proceso de alquiler</p>
+                  <v-btn class="rounded" x-large elevation="0" color="primary" block @click="confirmRental" :disabled="rentalData.owner_confirm">
+                    {{ rentalData.owner_confirm ? 'Alquiler confirmado' : 'Confirmar alquiler' }}
+                  </v-btn>
+                  <p class="text-caption">Una vez que ambas partes acepten, automaticamente de dirigiras a la siguiente pantalla</p>
+                </v-col>
+                <v-col v-else>
+                  <p>Aqui aparecera el boton de confirmación del alquiler una vez que ambas partes hayan firmado</p>
                 </v-col>
               </v-row>
             </v-col>
@@ -207,6 +226,13 @@ import VueQrcode from 'vue-qrcode'
         }).then(response => {
           this.$fire.firestore.doc(`rentals/${this.$route.params.id}`).update({ downpayment_invoice: response.id })
         })
+      }
+    }
+
+    confirmRental() {
+      this.$fire.firestore.doc(`rentals/${this.$route.params.id}`).update({ owner_confirm: true })
+      if(this.rentalData.tenant_confirm) {
+        this.$fire.firestore.doc(`rentals/${this.$route.params.id}`).update({ status: 'ongoing' })
       }
     }
 

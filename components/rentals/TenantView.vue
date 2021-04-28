@@ -26,8 +26,52 @@
             </v-btn>
           </div>
         </div>
-        <div v-else-if="rentalData.status === 'down_payment'" style="display: flex; flex-direction: column; justify-content: center; align-items: center">
-          <p class="text-h4 text-center">Realice el envio del cobro de la fianza, para posteriormente firmar el contrato</p>
+        <div v-else-if="rentalData.status === 'down_payment'" style="height: 100%">
+          <p class="text-h6 text-center">Realice el pago de la fianza, y firme el contrato</p>
+          <v-row>
+            <v-col style="display: flex; flex-direction: column; justify-content: center; align-items: center">
+              <div v-if="!invoiceData">
+                <p>Espere a que el propietario envie la factura de la fianza</p>
+              </div>
+              <div v-else-if="invoiceData && invoiceData.stripeInvoiceStatus !== 'paid'">
+                <p>La factura esta disponible</p>
+                <v-btn class="rounded" x-large elevation="0" color="primary" :href="invoiceData.stripeInvoiceUrl" target="_blank">
+                  Proceder al pago
+                </v-btn>
+              </div>
+              <div v-else-if="invoiceData && invoiceData.stripeInvoiceStatus === 'paid'" class="text-center">
+                <v-icon color="primary" size="100">mdi-check</v-icon>
+                <p>¡Fianza pagada correctamente!</p>
+              </div>
+            </v-col>
+          </v-row>
+          <v-divider class="my-4" />
+          <v-row>
+            <v-col v-if="!rentalData.tenantSignature" style="display: flex; flex-direction: column; justify-content: center">
+              <div class="text-center">
+                <vue-qrcode :width="200" :scale="1" :value="`https://rentalism.herokuapp.com/signature/${$route.params.id}?role=tenant`" />
+              </div>
+              <p class="text-center">Escanea este codigo QR en el movil para firmar el contrato</p>
+            </v-col>
+            <v-col v-else style="display: flex; flex-direction: column; justify-content: center; align-items: center">
+              <img :src="rentalData.tenantSignature" style="width: 200px">
+              <p class="text-center">¡Contrato firmado correctamente!</p>
+            </v-col>
+          </v-row>
+          <v-divider class="my-4" />
+          <v-row>
+            <v-col v-if="rentalData.tenantSignature && rentalData.ownerSignature">
+              <p>¡Ambas partes han firmado el contrato!</p>
+              <p>Dale click al siguiente boton para comenzar el proceso de alquiler</p>
+              <v-btn class="rounded" x-large elevation="0" color="primary" block @click="confirmRental" :disabled="rentalData.tenant_confirm">
+                {{ rentalData.tenant_confirm ? 'Alquiler confirmado' : 'Confirmar alquiler' }}
+              </v-btn>
+              <p class="text-caption">Una vez que ambas partes acepten, automaticamente de dirigiras a la siguiente pantalla</p>
+            </v-col>
+            <v-col v-else>
+              <p>Aqui aparecera el boton de confirmación del alquiler una vez que ambas partes hayan firmado</p>
+            </v-col>
+          </v-row>
         </div>
       </div>
     </div>
@@ -37,13 +81,17 @@
 <script lang="ts">
 import { Component, Prop, Vue, Watch } from 'vue-property-decorator'
 import { mapState } from 'vuex'
+import VueQrcode from 'vue-qrcode'
 
   @Component({
     computed: {
       ...mapState({
         userDoc: 'userDoc'
       })
-    }
+    },
+    components: {
+      VueQrcode,
+    },
   })
   export default class TenantView extends Vue {
     @Prop({ type: Object, required: true }) readonly otherPersonData!: any
@@ -56,6 +104,8 @@ import { mapState } from 'vuex'
     accountLink: any = null
     showDenyDialog: boolean = false
     denyMotiveText: string = ''
+    invoiceListener: any = null
+    invoiceData: any = null
 
     mounted() {
       const retrieveAccountData = this.$fire.functions.httpsCallable('stripe-retrieveConnectedAccountData')
@@ -78,10 +128,26 @@ import { mapState } from 'vuex'
 
     beforeDestroy() {
       if (this.rentalDataListener) this.rentalDataListener()
+      if (this.invoiceListener) this.invoiceListener()
     }
 
     acceptContract() {
       this.$fire.firestore.doc(`rentals/${this.$route.params.id}`).update({ status: 'down_payment' })
+    }
+
+    confirmRental() {
+      this.$fire.firestore.doc(`rentals/${this.$route.params.id}`).update({ tenant_confirm: true })
+      if(this.rentalData.owner_confirm) {
+        this.$fire.firestore.doc(`rentals/${this.$route.params.id}`).update({ status: 'ongoing' })
+      }
+    }
+
+    @Watch('rentalData.downpayment_invoice')
+    initializeInvoiceListener() {
+      console.log('initializing invoice listener')
+      this.invoiceListener = this.$fire.firestore.doc(`invoices/${this.rentalData.downpayment_invoice}`).onSnapshot(response => {
+        this.invoiceData = response.data()
+      })
     }
 
     @Watch('stripeUserData')
