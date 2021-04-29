@@ -122,6 +122,7 @@ import { mapState } from 'vuex'
     showLoginModal = false
     step = 1
     logoutSnackbar = false
+    notificationListener: any = null
     
     //login variables
     email: string = ''
@@ -134,6 +135,38 @@ import { mapState } from 'vuex'
     registrationPassword: string = ''
     repeatRegistrationPassword: string = ''
     registrationLoading: boolean = false
+
+    mounted() {
+      if(this.$store.state.authUser) {
+        this.$fire.messaging.getToken().then(token => {
+          this.$fire.firestore.doc(`users/${this.$store.state.authUser.uid}`).update({ notificationToken: token })
+        })
+
+        this.notificationListener = this.$fire.messaging.onMessage(message => {
+          console.log(message)
+          if(message.data.type === 'new-rent-request')
+          this.$toast.show(message.notification.title, {
+            duration: 3000,
+            position: 'top-right',
+            className: 'main-font',
+            theme: 'outline',
+            action: [
+              {
+                text: 'Ver',
+                onClick: (e, toastObject) => {
+                  this.$router.push(`rentals/${message.data.id}`)
+                  toastObject.goAway(0)
+                }
+              }
+            ]
+          })
+        })
+      }
+    }
+
+    beforeDestroy() {
+      if(this.notificationListener) this.notificationListener()
+    }
 
     directToLogin() {
       if(!this.$store.getters.isLoggedIn) {

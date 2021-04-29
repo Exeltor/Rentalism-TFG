@@ -110,7 +110,20 @@ import { Component, Vue } from 'vue-property-decorator'
           approxEndDate: this.selectedRentalDateRange[1],
           listing: this.$route.params.id,
           status: 'created'
+        }).then(response => {
+          const sendPushMessage = this.$fire.functions.httpsCallable('messaging-sendPushMessage')
+          if(this.ownerData.notificationToken) {
+            sendPushMessage({ 
+              name: 'new-rent-request',
+              type: 'new-rent-request',
+              id: response.id,
+              title: `Nueva petición de alquiler para ${this.listingData.name}`,
+              body: 'test',
+              token: this.ownerData.notificationToken
+            })
+          }
         })
+        this.beginRentalDialog = false
       } else {
         this.showDateRangeError = true
         setTimeout(() => this.showDateRangeError = false, 3000)

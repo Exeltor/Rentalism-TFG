@@ -45,6 +45,7 @@ export default {
   modules: [
     // https://go.nuxtjs.dev/axios
     '@nuxtjs/axios',
+    '@nuxtjs/toast',
     // https://go.nuxtjs.dev/pwa
     '@nuxtjs/pwa',
     [
@@ -68,11 +69,24 @@ export default {
           },
           firestore: true,
           storage: true,
-          functions: true
+          functions: true,
+          messaging: {
+            createServiceWorker: true,
+            actions: [
+              {
+                action: 'randomName',
+                url: 'randomUrl'
+              }
+            ],
+          }
         }
       }
     ]
   ],
+
+  toast: {
+    position: 'top-center',
+  },
 
   // Axios module configuration: https://go.nuxtjs.dev/config-axios
   axios: {},

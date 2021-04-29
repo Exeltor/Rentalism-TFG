@@ -29,7 +29,8 @@
       "@types/node",
       "@types/vuelidate",
       "@nuxtjs/vuetify",
-      "@nuxtjs/firebase"
+      "@nuxtjs/firebase",
+      "@nuxtjs/toast"
     ]
   },
   "exclude": [
