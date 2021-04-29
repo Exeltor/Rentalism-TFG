@@ -116,6 +116,16 @@
               <v-btn class="rounded mb-6" x-large block elevation="0" color="primary" :href="rentalData.contract_url">
                 Descargar contrato de alquiler
               </v-btn>
+              <v-row class="text-center">
+                <v-col>
+                  <p class="ma-0">Fdo. {{ userDoc.name }}</p>
+                  <img :src="rentalData.ownerSignature" style="height: 100px;">
+                </v-col>
+                <v-col>
+                  <p class="ma-0">Fdo. {{ otherPersonData.name }}</p>
+                  <img :src="rentalData.tenantSignature" style="height: 100px;">
+                </v-col>
+              </v-row>
               <div style="height: 50%; overflow-y: auto">
                 <div v-if="additionalInvoices.length === 0" style="display: flex; flex-direction: column; justify-content: center; align-center: center; height: 100%; width: 100%">
                   <p class="text-center">No hay facturas por pagar, y tampoco hay historial de pagos</p>
@@ -139,6 +149,7 @@
                   </div>
                 </v-list>
               </div>
+              <v-btn color="error" outlined block>Cerrar proceso de alquiler</v-btn>
             </v-col>
           </v-row>
         </div>
