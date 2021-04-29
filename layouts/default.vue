@@ -15,15 +15,18 @@
             <v-list-item class="navigation__item" @click.stop="directToLogin" exact exact-active-class="v-item--active">
               <img class="navigation__img" src="@/assets/images/user-icon.svg" alt="Profile">
             </v-list-item>
-            <v-list-item class="navigation__item" tag="nuxt-link" nuxt to="/listings" exact exact-active-class="v-item--active">
-              <img class="navigation__img" src="@/assets/images/grid-icon.svg" alt="Listings">
+            <v-list-item v-if="localUser" class="navigation__item" tag="nuxt-link" nuxt to="/listings" exact exact-active-class="v-item--active" @click="listingsNotification = false">
+              <v-badge v-if="listingsNotification" bordered color="error" overlap icon="mdi-alert-decagram">
+                <img class="navigation__img" src="@/assets/images/grid-icon.svg" alt="Listings">
+              </v-badge>
+              <img v-else class="navigation__img" src="@/assets/images/grid-icon.svg" alt="Listings">
             </v-list-item>
-            <v-list-item class="navigation__item" tag="nuxt-link" nuxt to="/settings" exact exact-active-class="v-item--active">
+            <v-list-item v-if="localUser" class="navigation__item" tag="nuxt-link" nuxt to="/settings" exact exact-active-class="v-item--active">
               <img class="navigation__img" src="@/assets/images/settings-icon.svg" alt="Settings">
             </v-list-item>
           </v-list-item-group>
         </v-list>
-        <v-btn icon x-large class="align-self-center mb-6" @click="logout">
+        <v-btn v-if="localUser" icon x-large class="align-self-center mb-6" @click="logout">
           <img src="@/assets/images/logout-icon.svg" alt="Logout" style="width: 35px; height: 35px;">
         </v-btn>
       </div>
@@ -123,6 +126,7 @@ import { mapState } from 'vuex'
     step = 1
     logoutSnackbar = false
     notificationListener: any = null
+    listingsNotification: any = false
     
     //login variables
     email: string = ''
@@ -144,22 +148,24 @@ import { mapState } from 'vuex'
 
         this.notificationListener = this.$fire.messaging.onMessage(message => {
           console.log(message)
-          if(message.data.type === 'new-rent-request')
-          this.$toast.show(message.notification.title, {
-            duration: 3000,
-            position: 'top-right',
-            className: 'main-font',
-            theme: 'outline',
-            action: [
-              {
-                text: 'Ver',
-                onClick: (e, toastObject) => {
-                  this.$router.push(`rentals/${message.data.id}`)
-                  toastObject.goAway(0)
+          if(message.data.type === 'new-rent-request') {
+            this.listingsNotification = true
+            this.$toast.show(message.notification.title, {
+              duration: 10000,
+              position: 'top-right',
+              className: 'main-font',
+              theme: 'outline',
+              action: [
+                {
+                  text: 'Ver',
+                  onClick: (e, toastObject) => {
+                    this.$router.push(`rentals/${message.data.id}`)
+                    toastObject.goAway(0)
+                  }
                 }
-              }
-            ]
-          })
+              ]
+            })
+          }
         })
       }
     }
@@ -270,6 +276,7 @@ import { mapState } from 'vuex'
     logout() {
       this.$fire.auth.signOut().then(() => {
         this.logoutSnackbar = true
+        this.$router.replace('/')
       })
     }
 

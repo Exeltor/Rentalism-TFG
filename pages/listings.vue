@@ -26,7 +26,29 @@
                 <p class="ml-4">{{ listing.type }} - {{ listing.subtype }}</p>
                 <v-row no-gutters class="mt-3">
                   <v-btn class="rounded-sm mr-2" elevation="0" text nuxt :to="`/search/${listing.id}`">Ver página</v-btn>
-                  <v-btn v-if="listing.rentalId" class="rounded-sm" elevation="0" color="primary" nuxt :to="`rentals/${listing.rentalId}`">Administrar</v-btn>
+                  <v-btn v-if="listing.rentals.length === 1" class="rounded-sm" elevation="0" color="primary" nuxt :to="`rentals/${listing.rentals[0].id}`">Administrar</v-btn>
+                  <v-menu v-if="listing.rentals.length > 1" offset-y rounded="sm" max-height="200px">
+                    <template v-slot:activator="{ on, attrs }">
+                      <v-btn class="rounded-sm" elevation="0" color="primary" v-bind="attrs" v-on="on">
+                        Administrar
+                        <v-icon right>
+                          mdi-menu-down
+                        </v-icon>
+                      </v-btn>
+                    </template>
+                    <v-list>
+                      <v-list-item v-for="rental in listing.rentals" :key="rental.id" nuxt :to="`/rentals/${rental.id}`">
+                        <v-list-item-title>{{ rental.tenantName }}</v-list-item-title>
+                        <div class="text-caption font-weight-bold ml-6">
+                          <div v-if="rental.status === 'created'" style="background-color: #f0f0f0; border-radius: 0.4rem" class="pa-1">Creado</div>
+                          <div v-else-if="rental.status === 'contract_formalization' || rental.status === 'down_payment'" style="background-color: #cf6b00; border-radius: 0.4rem; color: white" class="pa-1">{{ rental.status === 'contract_formalization' ? 'Contrato' : 'Fianza' }}</div>
+                          <div v-else-if="rental.status === 'ongoing'" style="background-color: #77B6C0; border-radius: 0.4rem; color: white" class="pa-1">En curso</div>
+                          <div v-else-if="rental.status === 'finalized'" style="background-color: #C30000; border-radius: 0.4rem; color: white" class="pa-1">Finalizado</div>
+                          <div v-else-if="rental.status === 'rejected'" style="background-color: #C30000; border-radius: 0.4rem; color: white" class="pa-1">Denegado</div>
+                        </div>
+                      </v-list-item>
+                    </v-list>
+                  </v-menu>
                 </v-row>
               </v-col>
             </v-row>
@@ -64,11 +86,13 @@
 <script lang="ts">
 import { Component, Vue, Watch } from 'vue-property-decorator'
 
-  @Component
+  @Component({
+    middleware: ['authenticated']
+  })
   export default class ListingsPage extends Vue {
     loading: boolean = true
 
-    listings: Object[] = [];
+    listings: any[] = [];
     rentals: Object[] = []
     mounted() {
       this.loading = true
@@ -85,7 +109,13 @@ import { Component, Vue, Watch } from 'vue-property-decorator'
         responses[0].docs.forEach(async document => this.listings.push({
           ...document.data(),
           id: document.id,
-          rentalId: (await this.$fire.firestore.collection('rentals').where('listing', '==', document.id).where('owner', '==', this.$store.state.authUser.uid).get()).docs[0]?.id
+          rentals: await Promise.all((await this.$fire.firestore.collection('rentals').where('listing', '==', document.id).where('owner', '==', this.$store.state.authUser.uid).get()).docs.map(async doc => {
+            return { 
+              ...doc.data(),
+              id: doc.id,
+              tenantName: (await this.$fire.firestore.doc(`users/${doc.data().tenant}`).get()).data()!.name
+            }
+          }))
         }))
         responses[1].forEach(async document => {
           this.rentals.push({ ...document.data(), id: document.id, rentalId: (await this.$fire.firestore.collection('rentals').where('listing', '==', document.id).where('tenant', '==', this.$store.state.authUser.uid).get()).docs[0].id })

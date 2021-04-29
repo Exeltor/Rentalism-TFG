@@ -124,6 +124,21 @@ import { Component, Vue } from 'vue-property-decorator'
           }
         })
         this.beginRentalDialog = false
+        this.$toast.show('¡Petición de alquiler creada!', {
+          duration: 5000,
+          position: 'top-right',
+          className: 'main-font',
+          theme: 'outline',
+          action: [
+            {
+              text: 'Cerrar',
+              onClick: (e, toastObject) => {
+                toastObject.goAway(0)
+              }
+            }
+          ]
+        })
+        this.$router.push(`/listings`)
       } else {
         this.showDateRangeError = true
         setTimeout(() => this.showDateRangeError = false, 3000)

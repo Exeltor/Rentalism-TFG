@@ -14,6 +14,11 @@
           <p class="text-h5 text-center">Esta sección se actualizara una vez que el propietario haya aceptado la peticion de alquiler</p>
           <p>Vuelve a entrar más tarde o espera</p>
         </div>
+        <div v-else-if="rentalData.status === 'rejected'" style="display: flex; flex-direction: column; justify-content: center; align-items: center">
+          <p class="text-h4">Denegado</p>
+          <p class="font-weight-bold">Esta peticion de alquiler ha sido denegada por el siguiente motivo</p>
+          <p style="white-space: pre-wrap; word-wrap: break-word">{{ rentalData.denyMotive }}</p>
+        </div>
         <div v-else-if="rentalData.status === 'contract_formalization'" style="display: flex; flex-direction: column; justify-content: center; align-items: center">
           <p class="text-h4 text-center">¡El propietario ha aceptado tu peticion de alquiler!</p>
           <p v-if="!rentalData.contract_url" class="text-center">Aqui aparecera el contrato de alquiler una vez que el propietario lo suba, el cual podras aceptar si estas de acuerdo con las condiciones</p>
@@ -73,14 +78,23 @@
             </v-col>
           </v-row>
         </div>
-        <div v-else-if="rentalData.status === 'ongoing'" style="height: 100%">
+        <div v-else-if="rentalData.status === 'ongoing' || rentalData.status === 'finalized'" style="height: 100%">
           <v-row style="height: 100%">
             <v-col>
-              <p class="text-h5">Alquiler en proceso</p>
+              <p class="text-h5">Alquiler {{ rentalData.status === 'ongoing' ? 'en proceso' : 'cerrado' }}</p>
               <p>Aqui puede visualizar el contrato, asi como los pagos requeridos por el propietario</p>
-              <v-btn class="rounded mb-6" x-large block elevation="0" color="primary" :href="rentalData.contract_url">
-                Descargar contrato de alquiler
-              </v-btn>
+              <v-row>
+                <v-col>
+                  <v-btn class="rounded mb-6" x-large block elevation="0" color="primary" :href="rentalData.contract_url">
+                    Descargar contrato de alquiler
+                  </v-btn>
+                </v-col>
+                <v-col>
+                  <v-btn class="rounded mb-6" x-large block elevation="0" color="primary" outlined @click="downloadDocuments">
+                    Descargar documentación
+                  </v-btn>
+                </v-col>
+              </v-row>
               <v-row class="text-center">
                 <v-col>
                   <p class="ma-0">Fdo. {{ userDoc.name }}</p>
@@ -111,7 +125,6 @@
                   </div>
                 </v-list>
               </div>
-              <v-btn color="error" outlined block>Cerrar proceso de alquiler</v-btn>
             </v-col>
           </v-row>
         </div>
@@ -171,6 +184,10 @@ import VueQrcode from 'vue-qrcode'
       }).catch(error => {
         console.log(error)
       })
+    }
+
+    downloadDocuments() {
+      this.listingData.documents.forEach((doc: string) => window.open(doc))
     }
 
     beforeDestroy() {

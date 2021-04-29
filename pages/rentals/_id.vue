@@ -30,13 +30,13 @@
                   <p class="text-caption mb-0" :class="message.sender !== $store.state.authUser.uid ? 'text-left' : 'text-right'">{{ message.timestamp.toDate().toLocaleTimeString() }}</p>
                 </div>
               </div>
-              <div v-else style="height: inherit; width: 100%" class="empty-messages-placeholder">
+              <div v-else style="height: 100%; width: 100%" class="empty-messages-placeholder">
                 <p class="mb-0">No hay mensajes... ¡Escribe uno!</p>
               </div>
             </div>
             <v-divider class="my-4" />
             <div class="input-container">
-              <v-textarea v-model="chatMessageText" class="rounded mr-1" filled rounded placeholder="Escribe tu mensaje..." auto-grow rows="1" hide-details="false" />
+              <v-textarea v-model="chatMessageText" class="rounded mr-1" filled rounded placeholder="Escribe tu mensaje..." auto-grow rows="1" hide-details="false" @keyup.enter="sendMessage" />
               <v-btn icon large><img src="@/assets/images/send-message-icon.svg" alt="Send" style="transform: rotate(90deg); height: 30px;" @click="sendMessage"></v-btn>
             </div>
           </div>
@@ -55,7 +55,8 @@ import OwnerView from '@/components/rentals/OwnerView.vue'
     components: {
       TenantView,
       OwnerView
-    }
+    },
+    middleware: ['authenticated']
   })
   export default class RentalDetailPage extends Vue {
     rentalData: any | null = null
@@ -108,12 +109,14 @@ import OwnerView from '@/components/rentals/OwnerView.vue'
       if (this.chatListener) this.chatListener()
     }
 
-    sendMessage() {
-      this.$fire.firestore.collection(`rentals/${this.$route.params.id}/messages`).add({
-        message: this.chatMessageText,
-        sender: this.$store.state.authUser.uid,
-        timestamp: new Date
-      })
+    sendMessage(event: any) {
+      if(this.chatMessageText.trim().length > 0 && !event.shiftKey) {
+        this.$fire.firestore.collection(`rentals/${this.$route.params.id}/messages`).add({
+          message: this.chatMessageText.trim(),
+          sender: this.$store.state.authUser.uid,
+          timestamp: new Date
+        })
+      }
       this.chatMessageText = ''
     }
 

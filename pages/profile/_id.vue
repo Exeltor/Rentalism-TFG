@@ -5,18 +5,12 @@
         <v-img v-if="user.imageUrl" :src="user.imageUrl" />
         <div v-else class="pa-5">
           <v-img :src="require('@/assets/images/user-icon.svg')" width="50%" />
-          <p>Haz click para añadir una foto de perfil</p>
+          <p v-if="$route.params.id === $store.state.authUser.uid">Haz click para añadir una foto de perfil</p>
         </div>
       </v-avatar>
       <input v-if="$route.params.id === $store.state.authUser.uid" ref="imageInput" style="display: none" type="file" accept="image/*" @change="handleProfilePicture">
       <p class="text-h4 pt-3">{{ user.name }}</p>
-      <p>{{ user.listings ? user.listings.length > 0 ? user.listings.length : 'No tiene' : 'No tiene' }} inmuebles en exposición</p>
-      <v-rating />
-      <v-row class="mt-3">
-        <v-btn icon x-large>
-          <img src="@/assets/images/flag-icon.svg" height="40" width="40">
-        </v-btn>
-      </v-row>
+      <p>{{ listings.length > 0 ? listings.length : 'No tiene' }} inmuebles en exposición</p>
       <v-row>
         <v-col cols="6" v-for="listing in listings" :key="listing.id">
           <nuxt-link :to="`/search/${listing.id}`">
@@ -41,7 +35,8 @@ import ListingCard from '@/components/search/ListingCard.vue'
     },
     components: {
       ListingCard
-    }
+    },
+    middleware: ['authenticated']
   })
   export default class ProfilePage extends Vue {
     user!: any

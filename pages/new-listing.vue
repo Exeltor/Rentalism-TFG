@@ -192,7 +192,8 @@ import { mapState } from 'vuex'
       ...mapState({
         userDoc: 'userDoc'
       })
-    }
+    },
+    middleware: ['authenticated']
   })
   export default class NewListingPage extends Vue {
     userDoc!: any
@@ -321,6 +322,7 @@ import { mapState } from 'vuex'
       this.picturePreviews.forEach((preview: any) => {
         URL.revokeObjectURL(preview)
       })
+      this.picturePreviews = []
       this.uploadedPhotos.forEach(photo => {
         this.picturePreviews.push(URL.createObjectURL(photo))
       })

@@ -23,6 +23,11 @@
             </v-btn>
           </div>
         </div>
+        <div v-else-if="rentalData.status === 'rejected'" style="display: flex; flex-direction: column; justify-content: center; align-items: center">
+          <p class="text-h4">Denegado</p>
+          <p class="font-weight-bold">Esta peticion de alquiler ha sido denegada por el siguiente motivo</p>
+          <p style="white-space: pre-wrap; word-wrap: break-word">{{ rentalData.denyMotive }}</p>
+        </div>
         <div v-else-if="rentalData.status === 'contract_formalization'" style="display: flex; flex-direction: column; justify-content: center; align-items: center">
           <v-row>
             <v-col>
@@ -108,14 +113,23 @@
             </v-col>
           </v-row>
         </div>
-        <div v-else-if="rentalData.status === 'ongoing'" style="height: 100%">
+        <div v-else-if="rentalData.status === 'ongoing' || rentalData.status === 'finalized'" style="height: 100%">
           <v-row style="height: 100%">
             <v-col>
-              <p class="text-h5">Alquiler en proceso</p>
-              <p>Aqui puede visualizar el contrato, asi como los pagos requeridos por el propietario</p>
-              <v-btn class="rounded mb-6" x-large block elevation="0" color="primary" :href="rentalData.contract_url">
-                Descargar contrato de alquiler
-              </v-btn>
+              <p class="text-h5">Alquiler {{ rentalData.status === 'ongoing' ? 'en proceso' : 'cerrado' }}</p>
+              <p>Aqui puede visualizar el contrato, asi como crear facturas adicionales</p>
+              <v-row>
+                <v-col>
+                  <v-btn class="rounded mb-6" x-large block elevation="0" color="primary" :href="rentalData.contract_url">
+                    Descargar contrato de alquiler
+                  </v-btn>
+                </v-col>
+                <v-col>
+                  <v-btn class="rounded mb-6" x-large block elevation="0" color="primary" outlined @click="downloadDocuments">
+                    Descargar documentación
+                  </v-btn>
+                </v-col>
+              </v-row>
               <v-row class="text-center">
                 <v-col>
                   <p class="ma-0">Fdo. {{ userDoc.name }}</p>
@@ -129,13 +143,13 @@
               <div style="height: 50%; overflow-y: auto">
                 <div v-if="additionalInvoices.length === 0" style="display: flex; flex-direction: column; justify-content: center; align-center: center; height: 100%; width: 100%">
                   <p class="text-center">No hay facturas por pagar, y tampoco hay historial de pagos</p>
-                  <v-btn x-large color="primary" class="rounded" outlined @click="showAdditionalInvoiceDialog = true">Crear nuevo pago</v-btn>
+                  <v-btn v-if="rentalData.status === 'ongoing'" x-large color="primary" class="rounded" outlined @click="showAdditionalInvoiceDialog = true">Crear nuevo pago</v-btn>
                 </div>
                 <v-list v-else>
                   <v-row no-gutters align="center" class="py-6" style="position: sticky; top: 0; background-color: white; z-index: 500">
                     <p class="mb-0 font-weight-bold">Lista de facturas</p>
                     <v-spacer />
-                    <v-btn class="rounded-sm" color="primary" @click="showAdditionalInvoiceDialog = true">Crear nueva factura</v-btn>
+                    <v-btn v-if="rentalData.status === 'ongoing'" class="rounded-sm" color="primary" @click="showAdditionalInvoiceDialog = true">Crear nueva factura</v-btn>
                   </v-row>
                   <div v-for="(invoice, index) in additionalInvoices" :key="index">
                     <v-divider class="pa-0 mb-6" />
@@ -149,7 +163,7 @@
                   </div>
                 </v-list>
               </div>
-              <v-btn color="error" outlined block>Cerrar proceso de alquiler</v-btn>
+              <v-btn v-if="rentalData.status === 'ongoing'" color="error" outlined block @click="closeRentalDialogOpen = true">Cerrar proceso de alquiler</v-btn>
             </v-col>
           </v-row>
         </div>
@@ -170,7 +184,7 @@
         </div>
       </v-card>
     </v-dialog>
-    <v-dialog v-model="showDenyDialog" max-width="600px" rounded="xl">
+    <v-dialog v-model="showDenyDialog" max-width="600px" rounded="xl" persistent>
       <v-card class="pa-6">
         <p class="text-h4">Indique motivo de la denegación</p>
         <v-textarea v-model="denyMotiveText" class="rounded mb-3" filled rounded label="Motivo denegación" hide-details="false" />
@@ -178,13 +192,13 @@
           <v-btn class="rounded mr-3" x-large elevation="0" color="primary" outlined @click="showDenyDialog = false">
             Cancelar
           </v-btn>
-          <v-btn class="rounded" x-large elevation="0" color="primary">
+          <v-btn class="rounded" x-large elevation="0" color="primary" @click="denyRental">
             Enviar y denegar
           </v-btn>
         </div>
       </v-card>
     </v-dialog>
-    <v-dialog v-model="downPaymentDialogOpen" max-width="600px" rounded="xl">
+    <v-dialog v-model="downPaymentDialogOpen" max-width="600px" rounded="xl" persistent>
       <v-card class="pa-6">
         <p class="text-h4">Indique cantidad de la fianza</p>
         <v-text-field v-model="invoiceDownpaymentAmount" class="rounded mb-3" filled rounded label="Cantidad" hide-details="false" type="number" required />
@@ -197,6 +211,22 @@
           </v-btn>
           <v-btn class="rounded" x-large elevation="0" color="primary" @click="generateInvoice">
             Enviar factura
+          </v-btn>
+        </div>
+      </v-card>
+    </v-dialog>
+    <v-dialog v-model="closeRentalDialogOpen" max-width="600px" rounded="xl" persistent>
+      <v-card class="pa-6">
+        <p class="text-h4">Cierre del proceso de alquiler</p>
+        <p>Cerrando el proceso de alquiler no podra crear nuevos pagos a traves de la plataforma</p>
+        <p>Esto <b>NO</b> invalida el alquiler, ya que unicamente el propio contrato tiene validez legal</p>
+        <p class="text-h5 text-center">¿Estas seguro?</p>
+        <div style="display: flex; flex-direction: row; height: auto; justify-content: center">
+          <v-btn class="rounded mr-3" x-large elevation="0" color="primary" outlined @click="closeRentalDialogOpen = false">
+            Cancelar
+          </v-btn>
+          <v-btn class="rounded" x-large elevation="0" color="error" @click="closeRental">
+            Cerrar proceso
           </v-btn>
         </div>
       </v-card>
@@ -242,6 +272,7 @@ import VueQrcode from 'vue-qrcode'
     showAdditionalInvoiceDialog: boolean = false
     additionalInvoiceAmount: number = 0
     additionalInvoiceName: string = ''
+    closeRentalDialogOpen: boolean = false
 
     mounted() {
       const retrieveAccountData = this.$fire.functions.httpsCallable('stripe-retrieveConnectedAccountData')
@@ -293,7 +324,21 @@ import VueQrcode from 'vue-qrcode'
           }
         }).then(response => {
           this.$fire.firestore.doc(`rentals/${this.$route.params.id}`).update({ downpayment_invoice: response.id })
+          this.downPaymentDialogOpen = false
         })
+      }
+    }
+
+    downloadDocuments() {
+      this.listingData.documents.forEach((doc: string) => window.open(doc))
+    }
+
+    denyRental() {
+      if(this.denyMotiveText.trim().length > 0) {
+        this.$fire.firestore.doc(`rentals/${this.$route.params.id}`).update({ 
+          status: 'rejected',
+          denyMotive: this.denyMotiveText.trim()
+        }).then(result => this.showDenyDialog = false)
       }
     }
 
@@ -316,6 +361,11 @@ import VueQrcode from 'vue-qrcode'
           this.showAdditionalInvoiceDialog = false
         })
       }
+    }
+
+    closeRental() {
+      this.$fire.firestore.doc(`rentals/${this.$route.params.id}`).update({ status: 'finalized' })
+      this.closeRentalDialogOpen = false
     }
 
     confirmRental() {
